@@ -21,6 +21,7 @@ import { QuickExpenseModal } from "@/components/ai/quick-expense-modal";
 
 export default function Dashboard() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const { data: balances, isLoading: balancesLoading } = useConvexQuery(
     api.dashboard.getUserBalances
@@ -30,18 +31,12 @@ export default function Dashboard() {
     api.dashboard.getUserGroups
   );
 
-  const { data: totalSpent, isLoading: totalSpentLoading } = useConvexQuery(
-    api.dashboard.getTotalSpent
+  const { data: analytics, isLoading: analyticsLoading } = useConvexQuery(
+    api.dashboard.getDashboardAnalytics,
+    { year: selectedYear }
   );
 
-  const { data: monthlySpending, isLoading: monthlySpendingLoading } =
-    useConvexQuery(api.dashboard.getMonthlySpending);
-
-  const isLoading =
-    balancesLoading ||
-    groupsLoading ||
-    totalSpentLoading ||
-    monthlySpendingLoading;
+  const isLoading = balancesLoading || groupsLoading || analyticsLoading;
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -157,8 +152,9 @@ export default function Dashboard() {
             <div className="lg:col-span-2 space-y-6">
               {/* Expense summary */}
               <ExpenseSummary
-                monthlySpending={monthlySpending}
-                totalSpent={totalSpent}
+                analytics={analytics}
+                selectedYear={selectedYear}
+                onYearChange={setSelectedYear}
               />
             </div>
 
