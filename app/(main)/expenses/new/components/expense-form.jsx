@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { getAllCategories } from "@/lib/expense-categories";
+import { useCurrency } from "@/components/providers/currency-context";
 
 // Form schema validation
 const expenseSchema = z.object({
@@ -43,6 +44,7 @@ const expenseSchema = z.object({
 });
 
 export function ExpenseForm({ type = "individual", onSuccess }) {
+  const { currencySymbol, formatAmount } = useCurrency();
   const [participants, setParticipants] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedGroup, setSelectedGroup] = useState(null);
@@ -276,14 +278,20 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
 
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
-            <Input
-              id="amount"
-              placeholder="0.00"
-              type="number"
-              step="0.01"
-              min="0.01"
-              {...register("amount")}
-            />
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-sm font-bold text-muted-foreground pointer-events-none">
+                {currencySymbol}
+              </span>
+              <Input
+                id="amount"
+                placeholder="0.00"
+                type="number"
+                step="0.01"
+                min="0.01"
+                className="pl-7 font-semibold"
+                {...register("amount")}
+              />
+            </div>
             {errors.amount && (
               <p className="text-sm text-red-500">{errors.amount.message}</p>
             )}

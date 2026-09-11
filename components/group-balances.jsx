@@ -4,6 +4,7 @@ import { useConvexQuery } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { useCurrency } from "@/components/providers/currency-context";
 
 /**
  * Expected `balances` shape (one object per member):
@@ -18,9 +19,9 @@ import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
  */
 export function GroupBalances({ balances }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
+  const { formatAmount } = useCurrency();
 
-  /* ───── guards ────────────────────────────────────────────────────────── */
-  if (!balances?.length || !currentUser) {
+  if (!balances || balances.length === 0) {
     return (
       <div className="text-center py-4 text-muted-foreground">
         No balance information available
@@ -28,34 +29,52 @@ export function GroupBalances({ balances }) {
     );
   }
 
-  /* ───── helpers ───────────────────────────────────────────────────────── */
-  const me = balances.find((b) => b.id === currentUser._id);
+  /* -------------------------------------------------------------------------- */
+  /*  Find current user's record                                                */
+  /* -------------------------------------------------------------------------- */
+  const me = balances.find((b) => b.id === currentUser?._id);
+
+  // If the user isn't in the balances list (rare), fallback
   if (!me) {
     return (
       <div className="text-center py-4 text-muted-foreground">
-        You’re not part of this group
+        You are not a member of this group.
       </div>
     );
   }
 
-  const userMap = Object.fromEntries(balances.map((b) => [b.id, b]));
-
-  // Who owes me?
+  /* -------------------------------------------------------------------------- */
+  /*  Map who owes ME and who I owe                                             */
+  /* -------------------------------------------------------------------------- */
   const owedByMembers = me.owedBy
-    .map(({ from, amount }) => ({ ...userMap[from], amount }))
-    .sort((a, b) => b.amount - a.amount);
+    .map((entry) => {
+      const member = balances.find((b) => b.id === entry.from);
+      return {
+        id: entry.from,
+        name: member?.name ?? "Unknown",
+        imageUrl: member?.imageUrl,
+        amount: entry.amount,
+      };
+    })
+    .filter((m) => m.amount > 0);
 
-  // Whom do I owe?
   const owingToMembers = me.owes
-    .map(({ to, amount }) => ({ ...userMap[to], amount }))
-    .sort((a, b) => b.amount - a.amount);
+    .map((entry) => {
+      const member = balances.find((b) => b.id === entry.to);
+      return {
+        id: entry.to,
+        name: member?.name ?? "Unknown",
+        imageUrl: member?.imageUrl,
+        amount: entry.amount,
+      };
+    })
+    .filter((m) => m.amount > 0);
 
   const isAllSettledUp =
     me.totalBalance === 0 &&
     owedByMembers.length === 0 &&
     owingToMembers.length === 0;
 
-  /* ───── UI ────────────────────────────────────────────────────────────── */
   return (
     <div className="space-y-4">
       {/* Current user's total balance */}
@@ -70,11 +89,7 @@ export function GroupBalances({ balances }) {
                 : ""
           }`}
         >
-          {me.totalBalance > 0
-            ? `+$${me.totalBalance.toFixed(2)}`
-            : me.totalBalance < 0
-              ? `-$${Math.abs(me.totalBalance).toFixed(2)}`
-              : "$0.00"}
+          {formatAmount(me.totalBalance, { showPositiveSign: true })}
         </p>
         <p className="text-sm text-muted-foreground mt-1">
           {me.totalBalance > 0
@@ -114,7 +129,7 @@ export function GroupBalances({ balances }) {
                       <span className="text-sm">{member.name}</span>
                     </div>
                     <span className="font-medium text-green-600">
-                      ${member.amount.toFixed(2)}
+                      {formatAmount(member.amount)}
                     </span>
                   </div>
                 ))}
@@ -145,7 +160,7 @@ export function GroupBalances({ balances }) {
                       <span className="text-sm">{member.name}</span>
                     </div>
                     <span className="font-medium text-red-600">
-                      ${member.amount.toFixed(2)}
+                      {formatAmount(member.amount)}
                     </span>
                   </div>
                 ))}

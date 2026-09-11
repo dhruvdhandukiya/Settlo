@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, AlertCircle, Scale } from "lucide-react";
+import { useCurrency } from "@/components/providers/currency-context";
 
 export function SplitSelector({
   type = "equal",
@@ -18,6 +19,7 @@ export function SplitSelector({
   onSplitsChange,
 }) {
   const { user } = useUser();
+  const { formatAmount, currencySymbol } = useCurrency();
   const [splits, setSplits] = useState([]);
   const [totalPercentage, setTotalPercentage] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -447,7 +449,7 @@ export function SplitSelector({
           {type === "equal" && (
             <div className="text-right text-xs">
               <span className="font-bold text-sm">
-                ${split.amount.toFixed(2)}
+                {formatAmount(split.amount)}
               </span>
               <span className="text-muted-foreground ml-1.5">
                 ({split.percentage.toFixed(1)}%)
@@ -488,7 +490,7 @@ export function SplitSelector({
                   </span>
                 </div>
                 <span className="text-xs font-bold text-foreground min-w-[55px] text-right">
-                  ${split.amount.toFixed(2)}
+                  {formatAmount(split.amount)}
                 </span>
               </div>
             </div>
@@ -498,7 +500,7 @@ export function SplitSelector({
             <div className="flex items-center gap-2 flex-1 justify-end">
               <div className="relative flex items-center">
                 <span className="absolute left-2.5 text-xs text-muted-foreground pointer-events-none">
-                  $
+                  {currencySymbol}
                 </span>
                 <Input
                   type="number"
@@ -531,8 +533,8 @@ export function SplitSelector({
             >
               <AlertCircle className="h-3 w-3" />
               {amountDifference > 0
-                ? `$${amountDifference.toFixed(2)} remaining`
-                : `$${Math.abs(amountDifference).toFixed(2)} over total`}
+                ? `${formatAmount(amountDifference)} remaining`
+                : `${formatAmount(Math.abs(amountDifference))} over total`}
             </Badge>
           ) : null}
         </div>
@@ -543,10 +545,10 @@ export function SplitSelector({
               !isAmountValid ? "text-amber-600" : "text-green-600"
             }`}
           >
-            ${totalAmount.toFixed(2)}
+            {formatAmount(totalAmount)}
           </span>
           <span className="text-xs text-muted-foreground ml-1.5">
-            / ${amount.toFixed(2)}
+            / {formatAmount(amount)}
           </span>
         </div>
       </div>
@@ -558,12 +560,8 @@ export function SplitSelector({
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>
               {amountDifference > 0
-                ? `$${amountDifference.toFixed(
-                    2
-                  )} has not been allocated to any participant.`
-                : `Total split exceeds bill amount by $${Math.abs(
-                    amountDifference
-                  ).toFixed(2)}.`}
+                ? `${formatAmount(amountDifference)} has not been allocated to any participant.`
+                : `Total split exceeds bill amount by ${formatAmount(Math.abs(amountDifference))}.`}
             </span>
           </div>
           <Button

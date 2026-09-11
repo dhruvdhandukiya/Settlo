@@ -39,11 +39,13 @@ import { api } from "@/convex/_generated/api";
 import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
 import { getCategoryById, getCategoryIcon } from "@/lib/expense-categories";
 import { ReceiptItemAssigner } from "./receipt-item-assigner";
+import { useCurrency } from "@/components/providers/currency-context";
 
 const MAX_TEXT_LENGTH = 500;
 
 export function QuickExpenseModal({ open, onOpenChange }) {
   const router = useRouter();
+  const { formatAmount } = useCurrency();
 
   // Queries & Mutations
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
@@ -709,7 +711,7 @@ export function QuickExpenseModal({ open, onOpenChange }) {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-green-600">
-                      ${proposal.amount.toFixed(2)}
+                      {formatAmount(proposal.amount)}
                     </div>
                     <Badge variant="outline" className="text-[10px] capitalize">
                       {proposal.splitType} Split
@@ -761,7 +763,7 @@ export function QuickExpenseModal({ open, onOpenChange }) {
                             <span className="font-medium">{pInfo?.name}</span>
                           </div>
                           <div className="font-bold">
-                            ${s.amount.toFixed(2)}
+                            {formatAmount(s.amount)}
                           </div>
                         </div>
                       );

@@ -38,19 +38,16 @@ import {
   Receipt,
 } from "lucide-react";
 import { getCategoryById, getCategoryIcon } from "@/lib/expense-categories";
+import { useCurrency } from "@/components/providers/currency-context";
 
 export function ExpenseSummary({
   analytics,
   selectedYear,
   onYearChange,
 }) {
+  const { formatAmount, currencySymbol } = useCurrency();
   const currentYear = new Date().getFullYear();
-  const currentMonthIndex = new Date().getMonth();
-
-  const availableYears = analytics?.availableYears?.length
-    ? analytics.availableYears
-    : [currentYear];
-
+  const currentMonthIdx = new Date().getMonth();
   const targetYear = selectedYear || analytics?.selectedYear || currentYear;
 
   const monthNames = [
@@ -83,23 +80,34 @@ export function ExpenseSummary({
     "December",
   ];
 
-  // Prepare chart data
-  const chartData =
-    analytics?.monthlySpending?.map((item) => ({
-      name: item.monthName || monthNames[item.monthIndex],
-      amount: item.total || 0,
-      count: item.count || 0,
-      isCurrentMonth:
-        targetYear === currentYear && item.monthIndex === currentMonthIndex,
-    })) ||
-    monthNames.map((m, idx) => ({
-      name: m,
-      amount: 0,
-      count: 0,
-      isCurrentMonth: targetYear === currentYear && idx === currentMonthIndex,
-    }));
+  // Build 12 months array with real data
+  const chartData = monthNames.map((name, index) => {
+    const found = (analytics?.monthlyBreakdown || []).find(
+      (m) => m.month === index + 1
+    );
+    const amount = found ? found.amount : 0;
+    const count = found ? found.count : 0;
+    const isCurrentMonth =
+      targetYear === currentYear && index === currentMonthIdx;
 
-  const activeMonthName = fullMonthNames[currentMonthIndex];
+    return {
+      name,
+      amount,
+      count,
+      isCurrentMonth,
+    };
+  });
+
+  const activeMonthName = fullMonthNames[currentMonthIdx];
+
+  // Available year options
+  const availableYears = analytics?.availableYears?.length
+    ? analytics.availableYears
+    : [
+        currentYear,
+        currentYear - 1,
+        currentYear - 2,
+      ];
 
   // Year navigation helpers
   const handlePrevYear = () => {
@@ -130,8 +138,7 @@ export function ExpenseSummary({
             {label} {targetYear}
           </p>
           <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
-            <DollarSign className="h-3.5 w-3.5" />
-            <span>${(data.amount || 0).toFixed(2)}</span>
+            <span>{formatAmount(data.amount || 0)}</span>
           </div>
           <p className="text-muted-foreground text-[11px]">
             {data.count} {data.count === 1 ? "expense" : "expenses"}
@@ -219,7 +226,7 @@ export function ExpenseSummary({
                 : "Active Month"}
             </span>
             <div className="text-xl font-bold text-foreground">
-              ${(analytics?.totalSpentThisMonth || 0).toFixed(2)}
+              {formatAmount(analytics?.totalSpentThisMonth || 0)}
             </div>
           </div>
 
@@ -228,7 +235,7 @@ export function ExpenseSummary({
               Total in {targetYear}
             </span>
             <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-              ${(analytics?.totalSpentThisYear || 0).toFixed(2)}
+              {formatAmount(analytics?.totalSpentThisYear || 0)}
             </div>
           </div>
 
@@ -237,7 +244,7 @@ export function ExpenseSummary({
               Monthly Average
             </span>
             <div className="text-xl font-bold text-foreground">
-              ${(analytics?.monthlyAverage || 0).toFixed(2)}
+              {formatAmount(analytics?.monthlyAverage || 0)}
             </div>
           </div>
 
@@ -283,7 +290,7 @@ export function ExpenseSummary({
                   tickLine={false}
                   axisLine={false}
                   tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  tickFormatter={(val) => `$${val}`}
+                  tickFormatter={(val) => `${currencySymbol}${val}`}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar
@@ -349,7 +356,7 @@ export function ExpenseSummary({
                       </div>
                       <div className="text-right">
                         <span className="font-bold">
-                          ${item.amount.toFixed(2)}
+                          {formatAmount(item.amount)}
                         </span>
                         <span className="text-[11px] text-muted-foreground ml-1">
                           ({item.percentage}%)
@@ -386,9 +393,7 @@ export function ExpenseSummary({
                   ? `Your highest spending category in ${targetYear} is ${
                       getCategoryById(analytics.topCategory.categoryId)?.name ||
                       analytics.topCategory.categoryId
-                    } ($${analytics.topCategory.amount.toFixed(
-                      2
-                    )}, ${analytics.topCategory.percentage}% of annual spend).`
+                    } (${formatAmount(analytics.topCategory.amount)}, ${analytics.topCategory.percentage}% of annual spend).`
                   : `You have recorded ${analytics.totalExpensesCount} shared expenses in ${targetYear}.`}
               </p>
             </div>

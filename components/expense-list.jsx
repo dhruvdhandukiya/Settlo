@@ -11,6 +11,7 @@ import { getCategoryIcon } from "@/lib/expense-categories";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useCurrency } from "@/components/providers/currency-context";
 
 export function ExpenseList({
   expenses,
@@ -21,6 +22,7 @@ export function ExpenseList({
 }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const deleteExpense = useConvexMutation(api.expenses.deleteExpense);
+  const { formatAmount } = useCurrency();
 
   if (!expenses || !expenses.length) {
     return (
@@ -40,30 +42,12 @@ export function ExpenseList({
       name:
         userId === currentUser?._id
           ? "You"
-          : userLookupMap[userId]?.name || "Other User",
-      imageUrl: null,
-      id: userId,
+          : userLookupMap[userId]?.name || "Someone",
+      imageUrl: userLookupMap[userId]?.imageUrl,
     };
   };
 
-  // Check if the user can delete an expense (creator or payer)
-  const canDeleteExpense = (expense) => {
-    if (!currentUser) return false;
-    return (
-      expense.createdBy === currentUser._id ||
-      expense.paidByUserId === currentUser._id
-    );
-  };
-
-  // Handle delete expense
   const handleDeleteExpense = async (expense) => {
-    // Use basic JavaScript confirm
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this expense? This action cannot be undone."
-    );
-
-    if (!confirmed) return;
-
     try {
       await deleteExpense.mutate({ expenseId: expense._id });
       toast.success("Expense deleted successfully");
@@ -73,39 +57,38 @@ export function ExpenseList({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-3">
       {expenses.map((expense) => {
-        const payer = getUserDetails(expense.paidByUserId, expense);
-        const isCurrentUserPayer = expense.paidByUserId === currentUser?._id;
         const category = getCategoryById(expense.category);
-        const CategoryIcon = getCategoryIcon(category.id);
-        const showDeleteOption = canDeleteExpense(expense);
+        const IconComponent = getCategoryIcon(expense.category);
+        const isCurrentUserPayer = expense.paidByUserId === currentUser?._id;
+        const payer = getUserDetails(expense.paidByUserId, expense);
+        const showDeleteOption = expense.createdBy === currentUser?._id;
 
         return (
-          <Card
-            className="hover:bg-muted/30 transition-colors"
-            key={expense._id}
-          >
-            <CardContent className="py-4">
+          <Card key={expense._id} className="overflow-hidden">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {/* Category icon */}
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <CategoryIcon className="h-5 w-5 text-primary" />
+                  <div
+                    className="p-2 rounded-full"
+                    style={{
+                      backgroundColor: `${category.color}20`,
+                      color: category.color,
+                    }}
+                  >
+                    <IconComponent className="h-5 w-5" />
                   </div>
 
                   <div>
-                    <h3 className="font-medium">{expense.description}</h3>
-                    <div className="flex items-center text-sm text-muted-foreground gap-2">
-                      <span>
-                        {format(new Date(expense.date), "MMM d, yyyy")}
-                      </span>
-                      {showOtherPerson && (
+                    <h4 className="font-medium">{expense.description}</h4>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>{format(new Date(expense.date), "MMM d, yyyy")}</span>
+                      {expense.category && (
                         <>
                           <span>•</span>
-                          <span>
-                            {isCurrentUserPayer ? "You" : payer.name} paid
-                          </span>
+                          <span>{category.name}</span>
                         </>
                       )}
                     </div>
@@ -115,7 +98,7 @@ export function ExpenseList({
                 <div className="flex items-center gap-2">
                   <div className="text-right">
                     <div className="font-medium">
-                      ${expense.amount.toFixed(2)}
+                      {formatAmount(expense.amount)}
                     </div>
                     {isGroupExpense ? (
                       <Badge variant="outline" className="mt-1">
@@ -175,8 +158,8 @@ export function ExpenseList({
                           </AvatarFallback>
                         </Avatar>
                         <span>
-                          {isCurrentUser ? "You" : splitUser.name}: $
-                          {split.amount.toFixed(2)}
+                          {isCurrentUser ? "You" : splitUser.name}:{" "}
+                          {formatAmount(split.amount)}
                         </span>
                       </Badge>
                     );

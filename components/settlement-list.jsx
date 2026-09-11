@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
+import { useCurrency } from "@/components/providers/currency-context";
 
 export function SettlementList({
   settlements,
@@ -15,7 +16,7 @@ export function SettlementList({
   userLookupMap,
 }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
-  console.log("settlements", settlements);
+  const { formatAmount } = useCurrency();
 
   if (!settlements || !settlements.length) {
     return (
@@ -86,7 +87,7 @@ export function SettlementList({
 
                 <div className="text-right">
                   <div className="font-medium">
-                    ${settlement.amount.toFixed(2)}
+                    {formatAmount(settlement.amount)}
                   </div>
                   {isGroupSettlement ? (
                     <Badge variant="outline" className="mt-1">

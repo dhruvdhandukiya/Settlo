@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useCurrency } from "@/components/providers/currency-context";
 
 // Form schema validation
 const settlementSchema = z.object({
@@ -29,6 +30,7 @@ const settlementSchema = z.object({
 export default function SettlementForm({ entityType, entityData, onSuccess }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const createSettlement = useConvexMutation(api.settlements.createSettlement);
+  const { currencySymbol, formatAmount } = useCurrency();
 
   // Set up form with validation
   const {
@@ -153,7 +155,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                 <span className="font-medium">{otherUser.name}</span> owes you
               </p>
               <span className="text-xl font-bold text-green-600">
-                ${netBalance.toFixed(2)}
+                {formatAmount(netBalance)}
               </span>
             </div>
           ) : (
@@ -162,7 +164,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                 You owe <span className="font-medium">{otherUser.name}</span>
               </p>
               <span className="text-xl font-bold text-red-600">
-                ${Math.abs(netBalance).toFixed(2)}
+                {formatAmount(Math.abs(netBalance))}
               </span>
             </div>
           )}
@@ -216,14 +218,14 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
         <div className="space-y-2">
           <Label htmlFor="amount">Amount</Label>
           <div className="relative">
-            <span className="absolute left-3 top-2.5">$</span>
+            <span className="absolute left-3 top-2.5 text-muted-foreground font-medium">{currencySymbol}</span>
             <Input
               id="amount"
               placeholder="0.00"
               type="number"
               step="0.01"
               min="0.01"
-              className="pl-7"
+              className="pl-8"
               {...register("amount")}
             />
           </div>
@@ -292,9 +294,9 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                       }`}
                     >
                       {isOwing
-                        ? `They owe you $${Math.abs(member.netBalance).toFixed(2)}`
+                        ? `They owe you ${formatAmount(Math.abs(member.netBalance))}`
                         : isOwed
-                          ? `You owe $${Math.abs(member.netBalance).toFixed(2)}`
+                          ? `You owe ${formatAmount(Math.abs(member.netBalance))}`
                           : "Settled up"}
                     </div>
                   </div>
@@ -385,14 +387,14 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5">$</span>
+                <span className="absolute left-3 top-2.5 text-muted-foreground font-medium">{currencySymbol}</span>
                 <Input
                   id="amount"
                   placeholder="0.00"
                   type="number"
                   step="0.01"
                   min="0.01"
-                  className="pl-7"
+                  className="pl-8"
                   {...register("amount")}
                 />
               </div>

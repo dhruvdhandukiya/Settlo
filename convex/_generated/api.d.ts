@@ -16,6 +16,7 @@ import type * as groups from "../groups.js";
 import type * as inngest from "../inngest.js";
 import type * as seed from "../seed.js";
 import type * as settlements from "../settlements.js";
+import type * as telegram from "../telegram.js";
 import type * as users from "../users.js";
 
 import type {
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   inngest: typeof inngest;
   seed: typeof seed;
   settlements: typeof settlements;
+  telegram: typeof telegram;
   users: typeof users;
 }>;
 

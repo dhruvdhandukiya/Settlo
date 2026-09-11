@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Users } from "lucide-react";
+import { useCurrency } from "@/components/providers/currency-context";
 
 export function GroupList({ groups }) {
+  const { formatAmount } = useCurrency();
   if (!groups || groups.length === 0) {
     return (
       <div className="text-center py-6">
@@ -44,7 +46,7 @@ export function GroupList({ groups }) {
                   balance > 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {balance > 0 ? "+" : ""}${balance.toFixed(2)}
+                {formatAmount(balance, { showPositiveSign: true })}
               </span>
             )}
           </Link>

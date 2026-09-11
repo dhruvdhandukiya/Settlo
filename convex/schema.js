@@ -7,17 +7,36 @@ export default defineSchema({
     email: v.string(),
     tokenIdentifier: v.string(),
     imageUrl: v.optional(v.string()),
+    telegramChatId: v.optional(v.string()),
+    telegramUsername: v.optional(v.string()),
+    currency: v.optional(v.string()), // e.g. "INR", "USD", "EUR", etc.
   })
     .index("by_token", ["tokenIdentifier"])
     .index("by_email", ["email"])
+    .index("by_telegram_chat", ["telegramChatId"])
     .searchIndex("search_name", { searchField: "name" })
     .searchIndex("search_email", { searchField: "email" }),
+
+  // Telegram Sessions & Conversational State Engine
+  telegram_sessions: defineTable({
+    chatId: v.string(),
+    userId: v.optional(v.id("users")),
+    linkingCode: v.optional(v.string()),
+    status: v.string(), // "unlinked" | "idle" | "awaiting_confirmation" | "awaiting_split" | "awaiting_clarification"
+    pendingExpense: v.optional(v.any()),
+    conversationHistory: v.optional(v.any()),
+    lastInteraction: v.number(),
+  })
+    .index("by_chat_id", ["chatId"])
+    .index("by_linking_code", ["linkingCode"])
+    .index("by_user", ["userId"]),
 
   // Expenses
   expenses: defineTable({
     description: v.string(),
     amount: v.number(),
     category: v.optional(v.string()),
+    currency: v.optional(v.string()), // e.g. "INR", "USD", "EUR"
     date: v.number(), // timestamp
     paidByUserId: v.id("users"), // Reference to users table
     splitType: v.string(), // "equal", "percentage", "exact"
@@ -39,6 +58,7 @@ export default defineSchema({
   settlements: defineTable({
     amount: v.number(),
     note: v.optional(v.string()),
+    currency: v.optional(v.string()),
     date: v.number(), // timestamp
     paidByUserId: v.id("users"), // Reference to users table
     receivedByUserId: v.id("users"), // Reference to users table

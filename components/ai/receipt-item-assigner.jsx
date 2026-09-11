@@ -46,6 +46,7 @@ export function ReceiptItemAssigner({
   onComplete,
   onCancel,
 }) {
+  const { formatAmount } = useCurrency();
   const lineItems = receiptData.lineItems || [];
   const tax = receiptData.tax || 0;
   const tip = receiptData.tip || 0;
@@ -215,7 +216,7 @@ export function ReceiptItemAssigner({
       groupId: null,
       splitType: "exact",
       splits,
-      reasoning: `${payerName} paid $${totalAmount.toFixed(2)} (Tax: $${tax.toFixed(2)}, Tip: $${tip.toFixed(2)})`,
+      reasoning: `${payerName} paid ${formatAmount(totalAmount)} (Tax: ${formatAmount(tax)}, Tip: ${formatAmount(tip)})`,
       confidence: receiptData.confidence || 0.95,
     };
 
@@ -244,10 +245,10 @@ export function ReceiptItemAssigner({
         </div>
         <div className="text-right flex sm:flex-col items-center sm:items-end gap-3 sm:gap-0">
           <span className="text-2xl font-bold text-green-600">
-            ${totalAmount.toFixed(2)}
+            {formatAmount(totalAmount)}
           </span>
           <span className="text-xs text-muted-foreground">
-            Tax: ${tax.toFixed(2)} • Tip: ${tip.toFixed(2)}
+            Tax: {formatAmount(tax)} • Tip: {formatAmount(tip)}
           </span>
         </div>
       </div>
@@ -268,10 +269,10 @@ export function ReceiptItemAssigner({
                   key={p.id}
                   type="button"
                   onClick={() => setSelectedPayerId(p.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition cursor-pointer border ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition cursor-pointer border ${
                     isPayer
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-                      : "bg-background text-muted-foreground hover:border-border"
+                      ? "bg-green-600 text-white border-green-600 shadow-sm"
+                      : "bg-background text-foreground border-border hover:bg-muted"
                   }`}
                 >
                   <Avatar className="h-4 w-4">
@@ -280,7 +281,7 @@ export function ReceiptItemAssigner({
                       {p.name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
-                  <span>{p.id === currentUserId ? "You" : p.name?.split(" ")[0]}</span>
+                  <span>{p.id === currentUserId ? "You" : p.name}</span>
                   {isPayer && <Check className="h-3 w-3" />}
                 </button>
               );
@@ -288,53 +289,42 @@ export function ReceiptItemAssigner({
           </div>
         </div>
 
-        {/* Participants at the Table */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/30">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-            <Users className="h-3.5 w-3.5" />
-            <span>People splitting ({activeParticipants.length})</span>
-          </div>
+        {/* Add Participant Search */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
+          <span className="text-xs text-muted-foreground">
+            Split participants ({activeParticipants.length}):
+          </span>
 
-          <Popover open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+          <Popover open={isAddOpen} onOpenChange={setIsAddOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs gap-1 border-dashed hover:border-green-600 hover:text-green-600"
+                className="h-7 text-xs gap-1.5"
               >
-                <UserPlus className="h-3.5 w-3.5" />
+                <UserPlus className="h-3 w-3" />
                 Add Person
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-0 w-64" align="end">
+            <PopoverContent className="w-56 p-0" align="end">
               <Command>
-                <CommandInput
-                  placeholder="Search user..."
-                  value={searchQuery}
-                  onValueChange={setSearchQuery}
-                />
+                <CommandInput placeholder="Search friends..." className="h-8 text-xs" />
                 <CommandList>
-                  <CommandEmpty>No users found</CommandEmpty>
-                  <CommandGroup heading="Contacts & Users">
-                    {availableToAdd.map((u) => (
+                  <CommandEmpty>No contact found.</CommandEmpty>
+                  <CommandGroup>
+                    {availableToAdd.map((contact) => (
                       <CommandItem
-                        key={u.id}
-                        value={u.name + u.email}
-                        onSelect={() => addParticipantToMeal(u)}
-                        className="cursor-pointer gap-2"
+                        key={contact.id}
+                        onSelect={() => addParticipant(contact)}
+                        className="flex items-center gap-2 text-xs cursor-pointer"
                       >
                         <Avatar className="h-5 w-5">
-                          <AvatarImage src={u.imageUrl} />
+                          <AvatarImage src={contact.imageUrl} />
                           <AvatarFallback className="text-[10px]">
-                            {u.name?.charAt(0)}
+                            {contact.name?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium">{u.name}</span>
-                          <span className="text-[10px] text-muted-foreground">
-                            {u.email}
-                          </span>
-                        </div>
+                        <span>{contact.name}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -345,18 +335,25 @@ export function ReceiptItemAssigner({
         </div>
       </div>
 
-      {unassignedItemsCount > 0 && (
-        <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>
-            {unassignedItemsCount} item{unassignedItemsCount > 1 ? "s" : ""}{" "}
-            currently unassigned. Tap avatars to assign.
+      {/* Line Items Matrix */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+          <span className="font-semibold uppercase tracking-wider text-[11px]">
+            Receipt Items ({lineItems.length})
+          </span>
+          <span className="text-[11px]">
+            {unassignedItems.length > 0 ? (
+              <span className="text-amber-600 font-medium">
+                {unassignedItems.length} item(s) unassigned
+              </span>
+            ) : (
+              <span className="text-green-600 font-medium">
+                ✓ All items assigned
+              </span>
+            )}
           </span>
         </div>
-      )}
 
-      {/* Item List */}
-      <div className="space-y-3 max-h-[340px] overflow-y-auto pr-1">
         {lineItems.map((item, idx) => {
           const assignedUserIds = assignments[item.id] || [];
 
@@ -373,7 +370,7 @@ export function ReceiptItemAssigner({
                   <span>{item.name}</span>
                 </div>
                 <div className="font-semibold text-sm">
-                  ${item.amount.toFixed(2)}
+                  {formatAmount(item.amount)}
                 </div>
               </div>
 
@@ -448,12 +445,12 @@ export function ReceiptItemAssigner({
                       {p.id === currentUserId ? `${p.name} (You)` : p.name}
                     </div>
                     <div className="text-[10px] text-muted-foreground mt-0.5">
-                      Items: ${share.subtotal.toFixed(2)}
+                      Items: {formatAmount(share.subtotal)}
                     </div>
                   </div>
                 </div>
                 <div className="font-bold text-sm text-green-600">
-                  ${share.total.toFixed(2)}
+                  {formatAmount(share.total)}
                 </div>
               </div>
             );
