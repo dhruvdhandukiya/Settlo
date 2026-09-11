@@ -30,6 +30,9 @@ import {
   Edit3,
   HelpCircle,
   ExternalLink,
+  Mic,
+  MicOff,
+  Volume2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
@@ -56,6 +59,8 @@ export function QuickExpenseModal({ open, onOpenChange }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [isPending, startTransition] = useTransition();
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = React.useRef(null);
 
   // State machine: 'input' | 'clarification' | 'receipt_matrix' | 'proposal' | 'error'
   const [stage, setStage] = useState("input");
@@ -66,6 +71,70 @@ export function QuickExpenseModal({ open, onOpenChange }) {
   const [conversationHistory, setConversationHistory] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Toggle Live Speech Recognition
+  const toggleSpeechRecognition = () => {
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition =
+      typeof window !== "undefined"
+        ? window.SpeechRecognition || window.webkitSpeechRecognition
+        : null;
+
+    if (!SpeechRecognition) {
+      toast.error(
+        "Speech recognition is not supported in this browser. Please use Chrome, Safari, or Edge."
+      );
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-IN"; // Supports English and Indian / Hinglish accents
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript) {
+          setInputText(transcript);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.warn("Speech recognition error:", event.error);
+        setIsListening(false);
+        if (event.error === "not-allowed") {
+          toast.error(
+            "Microphone access was denied. Please allow microphone permissions in browser."
+          );
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err);
+      setIsListening(false);
+    }
+  };
 
   // Quick suggestion chips
   const suggestionChips = [
@@ -82,6 +151,12 @@ export function QuickExpenseModal({ open, onOpenChange }) {
         : "Uber $30, Alex owes 20 and I owe 10",
     },
     {
+      label: "Hinglish Split",
+      text: contacts[0]
+        ? `Bhai CCD pe 450 bill aaya, maine pay kiya ${contacts[0].name.split(" ")[0]} aur mere beech aadha aadha split kar`
+        : "Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar",
+    },
+    {
       label: "Percentage Split",
       text: contacts[0]
         ? `Groceries $100, 60/40 between me and ${contacts[0].name.split(" ")[0]}`
@@ -91,6 +166,10 @@ export function QuickExpenseModal({ open, onOpenChange }) {
 
   // Return to input stage while preserving prompt text and file attachments
   const handleEditPrompt = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
     setStage("input");
     setProposal(null);
     setReceiptAnalysis(null);
@@ -103,6 +182,10 @@ export function QuickExpenseModal({ open, onOpenChange }) {
 
   // Full reset modal state (on dialog close or successful save)
   const handleReset = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
     setStage("input");
     setInputText("");
     setSelectedFile(null);
@@ -366,9 +449,46 @@ export function QuickExpenseModal({ open, onOpenChange }) {
               {/* Tab: Natural Text */}
               <TabsContent value="text" className="space-y-4 pt-3">
                 <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Type or speak your expense:
+                    </span>
+                    <Button
+                      type="button"
+                      variant={isListening ? "destructive" : "outline"}
+                      size="sm"
+                      onClick={toggleSpeechRecognition}
+                      className="h-7 px-2.5 text-xs gap-1.5 rounded-lg transition-all"
+                    >
+                      {isListening ? (
+                        <>
+                          <MicOff className="h-3.5 w-3.5 animate-pulse" />
+                          <span>Stop Listening</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span>Voice Input</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {isListening && (
+                    <div className="flex items-center justify-between text-xs text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-xl animate-pulse">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-red-600 animate-ping" />
+                        <span className="font-medium">
+                          Listening... Speak your expense in English or Hinglish
+                        </span>
+                      </div>
+                      <Volume2 className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+
                   <div className="relative">
                     <Textarea
-                      placeholder="e.g., Paid $60 for sushi with Sarah, split equally"
+                      placeholder="e.g., Paid $60 for sushi with Sarah, split equally OR 'Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha'"
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
                       maxLength={MAX_TEXT_LENGTH}

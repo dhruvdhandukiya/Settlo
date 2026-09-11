@@ -140,6 +140,72 @@ async function main() {
     assert.strictEqual(bobSplit.amount, 40);
   });
 
+  // TEST 3B: Hinglish Equal Split Parsing ("Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar")
+  await runTest("Hinglish Equal Split ('Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar')", async () => {
+    const result = await parseExpenseWithGemini({
+      text: "Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar",
+      currentUser: mockCurrentUser,
+      contacts: [
+        { id: "user_harsh_999", name: "Harsh", email: "harsh@example.com" },
+        ...mockContacts,
+      ],
+      groups: mockGroups,
+    });
+
+    assert.strictEqual(result.type, "expense_proposal");
+    assert.strictEqual(result.amount, 450);
+    assert.strictEqual(result.paidByUserId, "user_me_123", "Payer must be currentUser");
+    const mySplit = result.splits.find((s) => s.userId === "user_me_123");
+    const harshSplit = result.splits.find((s) => s.userId === "user_harsh_999");
+    assert(mySplit, "CurrentUser must be in splits");
+    assert(harshSplit, "Harsh must be in splits");
+    assert.strictEqual(mySplit.amount, 225);
+    assert.strictEqual(harshSplit.amount, 225);
+  });
+
+  // TEST 3C: Hinglish Third-Party Payer & Transportation ("Uber gaadi mein 300 gaya, Harsh ne pay kiya mera aur uska 50-50")
+  await runTest("Hinglish Payer & Category ('Uber gaadi mein 300 gaya, Harsh ne pay kiya mera aur uska 50-50')", async () => {
+    const result = await parseExpenseWithGemini({
+      text: "Uber gaadi mein 300 gaya, Harsh ne pay kiya mera aur uska 50-50",
+      currentUser: mockCurrentUser,
+      contacts: [
+        { id: "user_harsh_999", name: "Harsh", email: "harsh@example.com" },
+        ...mockContacts,
+      ],
+      groups: mockGroups,
+    });
+
+    assert.strictEqual(result.type, "expense_proposal");
+    assert.strictEqual(result.amount, 300);
+    assert.strictEqual(result.paidByUserId, "user_harsh_999", "Payer must be Harsh");
+    assert.strictEqual(result.category, "transportation");
+    const harshSplit = result.splits.find((s) => s.userId === "user_harsh_999");
+    const mySplit = result.splits.find((s) => s.userId === "user_me_123");
+    assert.strictEqual(harshSplit.amount, 150);
+    assert.strictEqual(mySplit.amount, 150);
+    assert.strictEqual(harshSplit.paid, true);
+    assert.strictEqual(mySplit.paid, false);
+  });
+
+  // TEST 3D: Hinglish Exact Allocation ("Groceries ka 1000 maine diya, Bob ka 400 baaki mera")
+  await runTest("Hinglish Exact Split ('Groceries ka 1000 maine diya, Bob ka 400 baaki mera')", async () => {
+    const result = await parseExpenseWithGemini({
+      text: "Groceries ka 1000 maine diya, Bob ka 400 baaki mera",
+      currentUser: mockCurrentUser,
+      contacts: mockContacts,
+      groups: mockGroups,
+    });
+
+    assert.strictEqual(result.type, "expense_proposal");
+    assert.strictEqual(result.amount, 1000);
+    assert.strictEqual(result.paidByUserId, "user_me_123", "Payer must be currentUser");
+    assert.strictEqual(result.category, "groceries");
+    const bobSplit = result.splits.find((s) => s.userId === "user_bob_789");
+    const mySplit = result.splits.find((s) => s.userId === "user_me_123");
+    assert.strictEqual(bobSplit.amount, 400);
+    assert.strictEqual(mySplit.amount, 600);
+  });
+
   // TEST 4: Ambiguity Test
   await runTest("Ambiguity Check ('Spent $50' with no participants)", async () => {
     const result = await parseExpenseWithGemini({
