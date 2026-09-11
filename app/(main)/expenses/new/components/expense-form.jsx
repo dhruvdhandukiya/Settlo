@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -47,9 +47,11 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [splits, setSplits] = useState([]);
+  const [initialDraftSplits, setInitialDraftSplits] = useState(null);
 
   // Mutations and queries
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
+  const { data: contactsData } = useConvexQuery(api.contacts.getAllContacts);
 
   const createExpense = useConvexMutation(api.expenses.createExpense);
   const categories = getAllCategories();
@@ -78,6 +80,108 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
   // Watch for changes
   const amountValue = watch("amount");
   const paidByUserId = watch("paidByUserId");
+  const splitTypeValue = watch("splitType") || "equal";
+  const categoryValue = watch("category");
+  const groupIdValue = watch("groupId");
+
+  // Restore draft from AI proposal if present
+  const loadDraft = React.useCallback(() => {
+    if (typeof window === "undefined" || !currentUser) return;
+    const rawDraft = sessionStorage.getItem("settlo_draft_expense");
+    if (!rawDraft) return;
+
+    try {
+      const draft = JSON.parse(rawDraft);
+
+      // If draft has a groupId but this form is individual (or vice versa), ignore
+      if (draft.groupId && type === "individual") return;
+      if (!draft.groupId && draft.splits?.length > 0 && type === "group") return;
+
+      if (draft.description) setValue("description", draft.description);
+      if (draft.amount !== undefined && draft.amount !== null) {
+        setValue("amount", draft.amount.toString());
+      }
+      if (draft.category) setValue("category", draft.category);
+      if (draft.date) {
+        const d = new Date(draft.date);
+        setSelectedDate(d);
+        setValue("date", d);
+      }
+      if (draft.paidByUserId) setValue("paidByUserId", draft.paidByUserId);
+      if (draft.splitType) setValue("splitType", draft.splitType);
+      if (draft.groupId) setValue("groupId", draft.groupId);
+
+      // Rebuild participants if splits are provided
+      if (Array.isArray(draft.splits) && draft.splits.length > 0) {
+        const allKnown = [
+          {
+            id: currentUser._id,
+            name: currentUser.name,
+            email: currentUser.email,
+            imageUrl: currentUser.imageUrl,
+          },
+          ...(contactsData?.users || []),
+        ];
+
+        const seenIds = new Set();
+        const restoredParticipants = [];
+
+        // 1. Add participants from splits
+        draft.splits.forEach((s) => {
+          if (!seenIds.has(s.userId)) {
+            seenIds.add(s.userId);
+            const match = allKnown.find((k) => k.id === s.userId);
+            restoredParticipants.push(
+              match || {
+                id: s.userId,
+                name: "Participant",
+                email: "",
+                imageUrl: null,
+              }
+            );
+          }
+        });
+
+        // 2. Ensure current user is in participants
+        if (!seenIds.has(currentUser._id)) {
+          restoredParticipants.unshift({
+            id: currentUser._id,
+            name: currentUser.name,
+            email: currentUser.email,
+            imageUrl: currentUser.imageUrl,
+          });
+        }
+
+        // 3. Ensure payer is in participants if specified
+        if (draft.paidByUserId && !seenIds.has(draft.paidByUserId)) {
+          const payerMatch = allKnown.find((k) => k.id === draft.paidByUserId);
+          if (payerMatch) {
+            restoredParticipants.push(payerMatch);
+          }
+        }
+
+        if (restoredParticipants.length > 0) {
+          setParticipants(restoredParticipants);
+        }
+
+        setInitialDraftSplits(draft.splits);
+        setSplits(draft.splits);
+      }
+
+      sessionStorage.removeItem("settlo_draft_expense");
+      toast.info("Prefilled expense details from AI Assistant draft");
+    } catch (err) {
+      console.warn("Could not load draft expense from sessionStorage:", err);
+    }
+  }, [currentUser, contactsData, setValue, type]);
+
+  useEffect(() => {
+    loadDraft();
+    window.addEventListener("settlo_draft_updated", loadDraft);
+    return () => {
+      window.removeEventListener("settlo_draft_updated", loadDraft);
+    };
+  }, [loadDraft]);
 
   // When a user is added or removed, update the participant list
   useEffect(() => {
@@ -193,6 +297,7 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
 
             <CategorySelector
               categories={categories || []}
+              value={categoryValue}
               onChange={(categoryId) => {
                 if (categoryId) {
                   setValue("category", categoryId);
@@ -240,6 +345,7 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
           <div className="space-y-2">
             <Label>Group</Label>
             <GroupSelector
+              value={groupIdValue}
               onChange={(group) => {
                 // Only update if the group has changed to prevent loops
                 if (!selectedGroup || selectedGroup.id !== group.id) {
@@ -303,7 +409,7 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
         <div className="space-y-2">
           <Label>Split type</Label>
           <Tabs
-            defaultValue="equal"
+            value={splitTypeValue}
             onValueChange={(value) => setValue("splitType", value)}
           >
             <TabsList className="grid w-full grid-cols-3">
@@ -311,43 +417,16 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
               <TabsTrigger value="percentage">Percentage</TabsTrigger>
               <TabsTrigger value="exact">Exact Amounts</TabsTrigger>
             </TabsList>
-            <TabsContent value="equal" className="pt-4">
-              <p className="text-sm text-muted-foreground">
-                Split equally among all participants
-              </p>
-              <SplitSelector
-                type="equal"
-                amount={parseFloat(amountValue) || 0}
-                participants={participants}
-                paidByUserId={paidByUserId}
-                onSplitsChange={setSplits} // Use setSplits directly
-              />
-            </TabsContent>
-            <TabsContent value="percentage" className="pt-4">
-              <p className="text-sm text-muted-foreground">
-                Split by percentage
-              </p>
-              <SplitSelector
-                type="percentage"
-                amount={parseFloat(amountValue) || 0}
-                participants={participants}
-                paidByUserId={paidByUserId}
-                onSplitsChange={setSplits} // Use setSplits directly
-              />
-            </TabsContent>
-            <TabsContent value="exact" className="pt-4">
-              <p className="text-sm text-muted-foreground">
-                Enter exact amounts
-              </p>
-              <SplitSelector
-                type="exact"
-                amount={parseFloat(amountValue) || 0}
-                participants={participants}
-                paidByUserId={paidByUserId}
-                onSplitsChange={setSplits} // Use setSplits directly
-              />
-            </TabsContent>
           </Tabs>
+
+          <SplitSelector
+            type={splitTypeValue}
+            amount={parseFloat(amountValue) || 0}
+            participants={participants}
+            paidByUserId={paidByUserId}
+            initialSplits={initialDraftSplits}
+            onSplitsChange={setSplits}
+          />
         </div>
       </div>
 

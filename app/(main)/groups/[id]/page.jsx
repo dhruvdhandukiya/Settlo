@@ -9,16 +9,18 @@ import { BarLoader } from "react-spinners";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, ArrowLeftRight, ArrowLeft, Users } from "lucide-react";
+import { PlusCircle, ArrowLeftRight, ArrowLeft, Users, UserPlus } from "lucide-react";
 import { ExpenseList } from "@/components/expense-list";
 import { SettlementList } from "@/components/settlement-list";
 import { GroupBalances } from "@/components/group-balances";
 import { GroupMembers } from "@/components/group-members";
+import { AddGroupMemberModal } from "@/components/add-group-member-modal";
 
 export default function GroupExpensesPage() {
   const params = useParams();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("expenses");
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   const { data, isLoading } = useConvexQuery(api.groups.getGroupExpenses, {
     groupId: params.id,
@@ -66,7 +68,15 @@ export default function GroupExpensesPage() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsAddMemberOpen(true)}
+              className="gap-1.5"
+            >
+              <UserPlus className="h-4 w-4" />
+              Add Members
+            </Button>
             <Button asChild variant="outline">
               <Link href={`/settlements/group/${params.id}`}>
                 <ArrowLeftRight className="mr-2 h-4 w-4" />
@@ -82,6 +92,14 @@ export default function GroupExpensesPage() {
           </div>
         </div>
       </div>
+
+      <AddGroupMemberModal
+        groupId={params.id}
+        groupName={group?.name}
+        existingMembers={members}
+        open={isAddMemberOpen}
+        onOpenChange={setIsAddMemberOpen}
+      />
 
       {/* Grid layout for group details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -102,7 +120,11 @@ export default function GroupExpensesPage() {
               <CardTitle className="text-xl">Members</CardTitle>
             </CardHeader>
             <CardContent>
-              <GroupMembers members={members} />
+              <GroupMembers
+                members={members}
+                groupId={params.id}
+                groupName={group?.name}
+              />
             </CardContent>
           </Card>
         </div>

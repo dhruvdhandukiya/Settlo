@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { useConvexQuery } from "@/hooks/use-convex-query";
 import { BarLoader } from "react-spinners";
@@ -11,13 +12,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, CreditCard, ChevronRight } from "lucide-react";
+import { PlusCircle, Users, CreditCard, ChevronRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ExpenseSummary } from "./components/expense-summary";
 import { BalanceSummary } from "./components/balance-summary";
 import { GroupList } from "./components/group-list";
+import { QuickExpenseModal } from "@/components/ai/quick-expense-modal";
 
 export default function Dashboard() {
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+
   const { data: balances, isLoading: balancesLoading } = useConvexQuery(
     api.dashboard.getUserBalances
   );
@@ -47,15 +51,29 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="flex  justify-between flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex justify-between flex-col sm:flex-row sm:items-center gap-4">
             <h1 className="text-5xl gradient-title">Dashboard</h1>
-            <Button asChild>
-              <Link href="/expenses/new">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add expense
-              </Link>
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => setIsAiModalOpen(true)}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Smart Add with AI
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/expenses/new">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add expense
+                </Link>
+              </Button>
+            </div>
           </div>
+
+          <QuickExpenseModal
+            open={isAiModalOpen}
+            onOpenChange={setIsAiModalOpen}
+          />
 
           {/* Balance overview cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

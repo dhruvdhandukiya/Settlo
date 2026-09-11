@@ -43,7 +43,7 @@ export const getCurrentUser = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error("Not authenticated");
+      return null;
     }
 
     const user = await ctx.db
@@ -53,11 +53,7 @@ export const getCurrentUser = query({
       )
       .first();
 
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    return user;
+    return user || null;
   },
 });
 
@@ -106,3 +102,28 @@ export const searchUsers = query({
       }));
   },
 });
+
+// Get user by Clerk ID for server-side resolution
+export const getUserByClerkId = query({
+  args: {
+    clerkUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const allUsers = await ctx.db.query("users").collect();
+    const user = allUsers.find(
+      (u) =>
+        u.tokenIdentifier === args.clerkUserId ||
+        u.tokenIdentifier?.includes(args.clerkUserId)
+    );
+    if (!user) return null;
+    return {
+      _id: user._id,
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      imageUrl: user.imageUrl,
+      tokenIdentifier: user.tokenIdentifier,
+    };
+  },
+});
+

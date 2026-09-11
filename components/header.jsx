@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { useStoreUser } from "@/hooks/use-store-user";
@@ -10,10 +10,12 @@ import { BarLoader } from "react-spinners";
 import { Authenticated, Unauthenticated } from "convex/react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { QuickExpenseModal } from "@/components/ai/quick-expense-modal";
 
 export default function Header() {
   const { isLoading } = useStoreUser();
   const path = usePathname();
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   return (
     <header className="fixed top-0 w-full border-b bg-white/95 backdrop-blur z-50 supports-[backdrop-filter]:bg-white/60">
@@ -47,6 +49,7 @@ export default function Header() {
 
         <div className="flex items-center gap-4">
           <Authenticated>
+
             <Link href="/dashboard">
               <Button
                 variant="outline"
@@ -69,6 +72,11 @@ export default function Header() {
                 },
               }}
               afterSignOutUrl="/"
+            />
+
+            <QuickExpenseModal
+              open={isAiModalOpen}
+              onOpenChange={setIsAiModalOpen}
             />
           </Authenticated>
 

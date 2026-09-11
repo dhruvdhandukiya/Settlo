@@ -1,4 +1,4 @@
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
@@ -191,3 +191,50 @@ export const getGroupExpenses = query({
     };
   },
 });
+
+// Add members to an existing group
+export const addMembersToGroup = mutation({
+  args: {
+    groupId: v.id("groups"),
+    members: v.array(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    const currentUser = await ctx.runQuery(internal.users.getCurrentUser);
+    if (!currentUser) throw new Error("Not authenticated");
+
+    const group = await ctx.db.get(args.groupId);
+    if (!group) throw new Error("Group not found");
+
+    // Verify current user is a member of the group
+    const isMember = group.members.some((m) => m.userId === currentUser._id);
+    if (!isMember) throw new Error("You are not a member of this group");
+
+    const existingMemberIds = new Set(group.members.map((m) => m.userId));
+    const newMembers = [];
+
+    for (const userId of args.members) {
+      if (!existingMemberIds.has(userId)) {
+        const user = await ctx.db.get(userId);
+        if (user) {
+          existingMemberIds.add(userId);
+          newMembers.push({
+            userId,
+            role: "member",
+            joinedAt: Date.now(),
+          });
+        }
+      }
+    }
+
+    if (newMembers.length === 0) {
+      return { success: true, addedCount: 0 };
+    }
+
+    await ctx.db.patch(args.groupId, {
+      members: [...group.members, ...newMembers],
+    });
+
+    return { success: true, addedCount: newMembers.length };
+  },
+});
+

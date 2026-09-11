@@ -13,8 +13,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function GroupSelector({ onChange }) {
-  const [selectedGroupId, setSelectedGroupId] = useState("");
+export function GroupSelector({ value, onChange }) {
+  const [selectedGroupId, setSelectedGroupId] = useState(value || "");
+
+  useEffect(() => {
+    if (value && value !== selectedGroupId) {
+      setSelectedGroupId(value);
+    }
+  }, [value]);
 
   // Single query to get all data we need
   const { data, isLoading } = useConvexQuery(
