@@ -171,8 +171,8 @@ export function TelegramConnectModal({ open, onOpenChange }) {
                       Example messages to send:
                     </span>
                     <ul className="text-muted-foreground text-[11px] space-y-0.5 list-disc pl-4">
-                      <li>"Dinner with Harsh $50, I paid"</li>
-                      <li>"Bhai CCD pe 450 gaya, maine pay kiya Harsh aur mera aadha aadha"</li>
+                      <li>"Dinner with Alex $50, I paid"</li>
+                      <li>"Bhai CCD pe 450 gaya, maine pay kiya Alex aur mera aadha aadha"</li>
                       <li>/balance (to check who owes you)</li>
                     </ul>
                   </div>

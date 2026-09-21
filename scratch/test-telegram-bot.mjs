@@ -51,22 +51,22 @@ async function main() {
       description: "Dinner at Taj",
       amount: 120,
       category: "foodDrink",
-      paidByUserName: "Dhruv",
-      paidByUserId: "user_dhruv_1",
+      paidByUserName: "Alex",
+      paidByUserId: "user_alex_1",
       splits: [
-        { userName: "Dhruv", userId: "user_dhruv_1", amount: 60, paid: true },
-        { userName: "Harsh", userId: "user_harsh_2", amount: 60, paid: false },
+        { userName: "Alex", userId: "user_alex_1", amount: 60, paid: true },
+        { userName: "Sam", userId: "user_sam_2", amount: 60, paid: false },
       ],
     };
 
     // Test default currency (INR ₹)
-    const inrMsg = formatExpenseProposalMessage(mockProposal, "Dhruv", null, "INR");
+    const inrMsg = formatExpenseProposalMessage(mockProposal, "Alex", null, "INR");
     assert(inrMsg.includes("Dinner at Taj"), "Must include description");
     assert(inrMsg.includes("₹120.00"), "Must include formatted INR amount");
-    assert(inrMsg.includes("Dhruv"), "Must include payer");
+    assert(inrMsg.includes("Alex"), "Must include payer");
 
     // Test USD ($)
-    const usdMsg = formatExpenseProposalMessage(mockProposal, "Dhruv", null, "USD");
+    const usdMsg = formatExpenseProposalMessage(mockProposal, "Alex", null, "USD");
     assert(usdMsg.includes("$120.00"), "Must include formatted USD amount");
 
     const keyboard = getProposalInlineKeyboard();
@@ -82,24 +82,24 @@ async function main() {
       youAreOwed: 45.5,
       youOwe: 0,
       oweDetails: {
-        youAreOwedBy: [{ name: "Harsh", amount: 45.5 }],
+        youAreOwedBy: [{ name: "Sam", amount: 45.5 }],
         youOwe: [],
       },
     };
 
     // Test INR
-    const inrMsg = formatBalanceMessage("Dhruv", mockBalances, "INR");
+    const inrMsg = formatBalanceMessage("Alex", mockBalances, "INR");
     assert(inrMsg.includes("+₹45.50"), "Must format positive INR balance");
-    assert(inrMsg.includes("Harsh"), "Must list person who owes");
+    assert(inrMsg.includes("Sam"), "Must list person who owes");
 
     // Test USD
-    const usdMsg = formatBalanceMessage("Dhruv", mockBalances, "USD");
+    const usdMsg = formatBalanceMessage("Alex", mockBalances, "USD");
     assert(usdMsg.includes("+$45.50"), "Must format positive USD balance");
   });
 
   // Test 3: Help Guide Command
   await runTest("Help Guide Message", async () => {
-    const msg = getHelpMessage("Dhruv");
+    const msg = getHelpMessage("Alex");
     assert(msg.includes("Settlo Telegram Bot Guide"), "Must include title");
     assert(msg.includes("/balance"), "Must include /balance command");
     assert(msg.includes("Receipt Photo"), "Must mention receipt photo");
@@ -112,7 +112,7 @@ async function main() {
       update_id: 1001,
       message: {
         chat: { id: 999999999 },
-        from: { id: 999999999, first_name: "Dhruv" },
+        from: { id: 999999999, first_name: "Alex" },
         text: "Dinner 50",
       },
     };

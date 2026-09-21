@@ -156,7 +156,7 @@ export function QuickExpenseModal({ open, onOpenChange }) {
       label: "Hinglish Split",
       text: contacts[0]
         ? `Bhai CCD pe 450 bill aaya, maine pay kiya ${contacts[0].name.split(" ")[0]} aur mere beech aadha aadha split kar`
-        : "Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar",
+        : "Bhai CCD pe 450 bill aaya, maine pay kiya Alex aur mere beech aadha aadha split kar",
     },
     {
       label: "Percentage Split",
@@ -490,7 +490,7 @@ export function QuickExpenseModal({ open, onOpenChange }) {
 
                   <div className="relative">
                     <Textarea
-                      placeholder="e.g., Paid $60 for sushi with Sarah, split equally OR 'Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha'"
+                      placeholder="e.g., Paid $60 for sushi with Sarah, split equally OR 'Bhai CCD pe 450 bill aaya, maine pay kiya Alex aur mere beech aadha aadha'"
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
                       maxLength={MAX_TEXT_LENGTH}

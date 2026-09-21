@@ -1,185 +1,171 @@
+"use client";
+
+import React from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import dynamic from "next/dynamic";
+import { ArrowRight, Bot, Sparkles, Mic, Camera, Zap, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import Image from "next/image";
-import { FEATURES, STEPS, TESTIMONIALS } from "@/lib/landing";
+
+const Hero3DCard = dynamic(
+  () => import("@/components/landing/hero-3d-card").then((m) => m.Hero3DCard),
+  { ssr: false }
+);
+
+import { InteractivePlayground } from "@/components/landing/interactive-playground";
+import { TelegramShowcase } from "@/components/landing/telegram-showcase";
+import { BentoFeatures } from "@/components/landing/bento-features";
+import { DebtGraphVisualizer } from "@/components/landing/debt-graph-visualizer";
+import { ComparisonMatrix } from "@/components/landing/comparison-matrix";
+import { TechStackSection } from "@/components/landing/tech-stack-section";
+import { FaqSection } from "@/components/landing/faq-section";
+import { LandingCta } from "@/components/landing/landing-cta";
+import { LandingFooter } from "@/components/landing/landing-footer";
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col pt-16">
-      {/* ───── Hero ───── */}
-      <section className="mt-20 pb-12 space-y-10 md:space-y-15 px-5">
-        <div className="container mx-auto px-4 md:px-6 text-center space-y-6">
-          <Badge variant="outline" className="bg-green-100 text-green-700">
-            Split expenses. Simplify life.
-          </Badge>
+    <div className="flex flex-col min-h-screen pt-4 overflow-x-hidden bg-background text-foreground">
+      {/* ───── Hero Section: Obsidian 3D Grid ───── */}
+      <section className="relative pt-8 pb-14 px-4 sm:px-6 lg:px-8 border-b border-border/40">
+        {/* Subtle dot matrix grid background */}
+        <div
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none -z-10"
+          style={{
+            backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
 
-          <h1 className="gradient-title mx-auto max-w-6xl text-4xl font-bold md:text-8xl">
-            The smartest way to split expenses with friends
-          </h1>
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Left Column: Bold Typography & Value Hook */}
+          <div className="lg:col-span-6 space-y-6 text-left">
+            {/* Top Pill */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[11px] font-mono uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>THE INTELLIGENT EXPENSE ENGINE</span>
+            </div>
 
-          <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed">
-            Track shared expenses, split bills effortlessly, and settle up
-            quickly. Never worry about who owes who again.
-          </p>
+            {/* Main Headline */}
+            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-foreground leading-[0.95]">
+              Money,
+              <br />
+              <span className="text-emerald-600 dark:text-emerald-400">settled.</span>
+            </h1>
 
-          <div className="flex flex-col items-center gap-4 sm:flex-row justify-center">
-            <Button
-              asChild
-              size="lg"
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Link href="/dashboard">
-                Get Started
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="border-green-600 text-green-600 hover:bg-green-50"
-            >
-              <Link href="#how-it-works">See How It Works</Link>
-            </Button>
-          </div>
-        </div>
+            {/* Subheadline */}
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-lg">
+              One intelligent layer for your shared expenses. Split in Hinglish, voice notes, or directly inside Telegram without the friction.
+            </p>
 
-        <div className="container mx-auto max-w-5xl overflow-hidden rounded-xl shadow-xl">
-          <div className="gradient p-1 aspect-[16/9]">
-            <Image
-              src="/hero.png"
-              width={1280}
-              height={720}
-              alt="Banner"
-              className="rounded-lg mx-auto"
-              priority
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Features ───── */}
-      <section id="features" className="bg-gray-50 py-20">
-        <div className="container mx-auto px-4 md:px-6 text-center">
-          <Badge variant="outline" className="bg-green-100 text-green-700">
-            Features
-          </Badge>
-          <h2 className="gradient-title mt-2 text-3xl md:text-4xl">
-            Everything you need to split expenses
-          </h2>
-          <p className="mx-auto mt-3 max-w-[700px] text-gray-500 md:text-xl/relaxed">
-            Our platform provides all the tools you need to handle shared
-            expenses with ease.
-          </p>
-
-          <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ title, Icon, bg, color, description }) => (
-              <Card
-                key={title}
-                className="flex flex-col items-center space-y-4 p-6 text-center"
+            {/* Dual CTAs (Real working links, no fake waitlists) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              <Button
+                asChild
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm h-12 px-6 rounded-2xl shadow-lg shadow-emerald-600/20 gap-2 cursor-pointer"
               >
-                <div className={`rounded-full p-3 ${bg}`}>
-                  <Icon className={`h-6 w-6 ${color}`} />
-                </div>
+                <Link href="/dashboard">
+                  <span>Launch Web App</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
 
-                <h3 className="text-xl font-bold">{title}</h3>
-                <p className="text-gray-500">{description}</p>
-              </Card>
-            ))}
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="border-border/80 hover:bg-muted/80 text-foreground font-semibold text-sm h-12 px-6 rounded-2xl gap-2 backdrop-blur-md cursor-pointer"
+              >
+                <Link href="/dashboard?telegram=open">
+                  <Bot className="h-4 w-4 text-sky-500" />
+                  <span>Connect Telegram Bot ↗</span>
+                </Link>
+              </Button>
+            </div>
+
+            {/* Honest Status Note (Zero fake avatars/fake waitlists) */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1 font-medium">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              <span>100% Free &amp; Open Beta • Zero ads • No credit card required</span>
+            </div>
+          </div>
+
+          {/* Right Column: Real Three.js 3D WebGL Card Canvas */}
+          <div className="lg:col-span-6 relative">
+            <Hero3DCard />
           </div>
         </div>
-      </section>
 
-      {/* ───── How it works ───── */}
-      <section id="how-it-works" className="py-20">
-        <div className="container mx-auto px-4 md:px-6 text-center">
-          <Badge variant="outline" className="bg-green-100 text-green-700">
-            How It Works
-          </Badge>
-          <h2 className="gradient-title mt-2 text-3xl md:text-4xl">
-            Splitting expenses has never been easier
-          </h2>
-          <p className="mx-auto mt-3 max-w-[700px] text-gray-500 md:text-xl/relaxed">
-            Follow these simple steps to start tracking and splitting expenses
-            with friends.
-          </p>
-
-          <div className="mx-auto mt-12 grid max-w-5xl gap-8 md:grid-cols-3">
-            {STEPS.map(({ label, title, description }) => (
-              <div key={label} className="flex flex-col items-center space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-xl font-bold text-green-600">
-                  {label}
-                </div>
-                <h3 className="text-xl font-bold">{title}</h3>
-                <p className="text-gray-500 text-center">{description}</p>
+        {/* ───── 3 Bottom Capability Feature Cards (as seen in design) ───── */}
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 pt-8 border-t border-border/40">
+          <div className="p-4 rounded-2xl bg-card/60 dark:bg-card/30 border border-border/60 backdrop-blur-md flex items-start gap-3.5 hover:border-emerald-500/30 transition-all">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <Zap className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-foreground">Instantly smart</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Every transaction understood with Gemini multimodal AI.
               </div>
-            ))}
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-card/60 dark:bg-card/30 border border-border/60 backdrop-blur-md flex items-start gap-3.5 hover:border-emerald-500/30 transition-all">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400">
+              <Mic className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-foreground">Just say it</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Record a voice memo in plain English or Hinglish.
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-card/60 dark:bg-card/30 border border-border/60 backdrop-blur-md flex items-start gap-3.5 hover:border-emerald-500/30 transition-all">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <Camera className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-foreground">Point &amp; settle</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Scan. Split. Done. Zero math headaches.
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ───── Testimonials ───── */}
-      <section className="bg-gray-50 py-20">
-        <div className="container mx-auto px-4 md:px-6 text-center">
-          <Badge variant="outline" className="bg-green-100 text-green-700">
-            Testimonials
-          </Badge>
-          <h2 className="gradient-title mt-2 text-3xl md:text-4xl">
-            What our users are saying
-          </h2>
-
-          <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {TESTIMONIALS.map(({ quote, name, role, image }) => (
-              <Card key={name} className="flex flex-col justify-between">
-                <CardContent className="space-y-4 p-6">
-                  <p className="text-gray-500">{quote}</p>
-                  <div className="flex items-center space-x-3">
-                    <Avatar>
-                      {/* Placeholder avatar */}
-                      <AvatarImage src={image} alt={name} />
-                      <AvatarFallback className="uppercase">
-                        {name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-left">
-                      <p className="text-sm font-medium">{name}</p>
-                      <p className="text-sm text-muted-foreground">{role}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+      {/* ───── Live Interactive AI Split Playground ───── */}
+      <section className="py-12 px-4">
+        <InteractivePlayground />
       </section>
 
-      {/* ───── Call‑to‑Action ───── */}
-      <section className="py-20 gradient">
-        <div className="container mx-auto px-4 md:px-6 text-center space-y-6">
-          <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl text-white">
-            Ready to simplify expense sharing?
-          </h2>
-          <p className="mx-auto max-w-[600px] text-green-100 md:text-xl/relaxed">
-            Join thousands of users who have made splitting expenses
-            stress‑free.
-          </p>
-          <Button asChild size="lg" className="bg-green-800 hover:opacity-90">
-            <Link href="/dashboard">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+      {/* ───── Telegram Bot 24/7 Companion Showcase ───── */}
+      <section className="py-12 px-4 bg-muted/10 border-y border-border/40">
+        <TelegramShowcase />
       </section>
 
-      {/* ───── Footer ───── */}
-      <footer className="border-t bg-gray-50 py-12 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} Settlo. All rights reserved.
-      </footer>
+      {/* ───── Technical Bento Grid ───── */}
+      <BentoFeatures />
+
+      {/* ───── Debt Graph Algorithm Visualizer ───── */}
+      <DebtGraphVisualizer />
+
+      {/* ───── Honest Feature Comparison Matrix ───── */}
+      <ComparisonMatrix />
+
+      {/* ───── Tech Stack & Architecture Transparency ───── */}
+      <TechStackSection />
+
+      {/* ───── Frequently Asked Questions ───── */}
+      <FaqSection />
+
+      {/* ───── Call to Action ───── */}
+      <LandingCta />
+
+      {/* ───── Modern Footer ───── */}
+      <LandingFooter />
     </div>
   );
 }

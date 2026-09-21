@@ -23,8 +23,8 @@ console.log("🚀 Starting Phase 1 AI Parsing Test Suite...\n");
 
 const mockCurrentUser = {
   id: "user_me_123",
-  name: "Dhruv",
-  email: "dhruv@example.com",
+  name: "Alex",
+  email: "alex@example.com",
 };
 
 const mockContacts = [
@@ -37,7 +37,7 @@ const mockGroups = [
     id: "group_trip_001",
     name: "Weekend Trip",
     members: [
-      { userId: "user_me_123", name: "Dhruv" },
+      { userId: "user_me_123", name: "Alex" },
       { userId: "user_alice_456", name: "Alice Smith" },
       { userId: "user_bob_789", name: "Bob Johnson" },
     ],
@@ -100,13 +100,13 @@ async function main() {
     assert.strictEqual(mySplit.amount, 10);
   });
 
-  // TEST 2B: Third-Party Payer Test ("Harsh has paid bill for Dhruv $40")
-  await runTest("Third-Party Payer ('Harsh has paid bill for Dhruv $40')", async () => {
+  // TEST 2B: Third-Party Payer Test ("Sam has paid bill for Alex $40")
+  await runTest("Third-Party Payer ('Sam has paid bill for Alex $40')", async () => {
     const result = await parseExpenseWithGemini({
-      text: "Harsh has paid bill for Dhruv $40",
+      text: "Sam has paid bill for Alex $40",
       currentUser: mockCurrentUser,
       contacts: [
-        { id: "user_harsh_999", name: "Harsh", email: "harsh@example.com" },
+        { id: "user_sam_999", name: "Sam", email: "sam@example.com" },
         ...mockContacts,
       ],
       groups: mockGroups,
@@ -114,13 +114,13 @@ async function main() {
 
     assert.strictEqual(result.type, "expense_proposal");
     assert.strictEqual(result.amount, 40);
-    assert.strictEqual(result.paidByUserId, "user_harsh_999", "Payer must be Harsh");
-    const harshSplit = result.splits.find((s) => s.userId === "user_harsh_999");
-    const dhruvSplit = result.splits.find((s) => s.userId === "user_me_123");
-    assert(harshSplit, "Harsh must be in splits");
-    assert(dhruvSplit, "Dhruv must be in splits");
-    assert.strictEqual(harshSplit.paid, true, "Harsh paid should be true");
-    assert.strictEqual(dhruvSplit.paid, false, "Dhruv paid should be false");
+    assert.strictEqual(result.paidByUserId, "user_sam_999", "Payer must be Sam");
+    const samSplit = result.splits.find((s) => s.userId === "user_sam_999");
+    const alexSplit = result.splits.find((s) => s.userId === "user_me_123");
+    assert(samSplit, "Sam must be in splits");
+    assert(alexSplit, "Alex must be in splits");
+    assert.strictEqual(samSplit.paid, true, "Sam paid should be true");
+    assert.strictEqual(alexSplit.paid, false, "Alex paid should be false");
   });
 
   // TEST 3: Percentage Split Test
@@ -140,13 +140,13 @@ async function main() {
     assert.strictEqual(bobSplit.amount, 40);
   });
 
-  // TEST 3B: Hinglish Equal Split Parsing ("Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar")
-  await runTest("Hinglish Equal Split ('Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar')", async () => {
+  // TEST 3B: Hinglish Equal Split Parsing ("Bhai CCD pe 450 bill aaya, maine pay kiya Sam aur mere beech aadha aadha split kar")
+  await runTest("Hinglish Equal Split ('Bhai CCD pe 450 bill aaya, maine pay kiya Sam aur mere beech aadha aadha split kar')", async () => {
     const result = await parseExpenseWithGemini({
-      text: "Bhai CCD pe 450 bill aaya, maine pay kiya Harsh aur mere beech aadha aadha split kar",
+      text: "Bhai CCD pe 450 bill aaya, maine pay kiya Sam aur mere beech aadha aadha split kar",
       currentUser: mockCurrentUser,
       contacts: [
-        { id: "user_harsh_999", name: "Harsh", email: "harsh@example.com" },
+        { id: "user_sam_999", name: "Sam", email: "sam@example.com" },
         ...mockContacts,
       ],
       groups: mockGroups,
@@ -156,20 +156,20 @@ async function main() {
     assert.strictEqual(result.amount, 450);
     assert.strictEqual(result.paidByUserId, "user_me_123", "Payer must be currentUser");
     const mySplit = result.splits.find((s) => s.userId === "user_me_123");
-    const harshSplit = result.splits.find((s) => s.userId === "user_harsh_999");
+    const samSplit = result.splits.find((s) => s.userId === "user_sam_999");
     assert(mySplit, "CurrentUser must be in splits");
-    assert(harshSplit, "Harsh must be in splits");
+    assert(samSplit, "Sam must be in splits");
     assert.strictEqual(mySplit.amount, 225);
-    assert.strictEqual(harshSplit.amount, 225);
+    assert.strictEqual(samSplit.amount, 225);
   });
 
-  // TEST 3C: Hinglish Third-Party Payer & Transportation ("Uber gaadi mein 300 gaya, Harsh ne pay kiya mera aur uska 50-50")
-  await runTest("Hinglish Payer & Category ('Uber gaadi mein 300 gaya, Harsh ne pay kiya mera aur uska 50-50')", async () => {
+  // TEST 3C: Hinglish Third-Party Payer & Transportation ("Uber gaadi mein 300 gaya, Sam ne pay kiya mera aur uska 50-50")
+  await runTest("Hinglish Payer & Category ('Uber gaadi mein 300 gaya, Sam ne pay kiya mera aur uska 50-50')", async () => {
     const result = await parseExpenseWithGemini({
-      text: "Uber gaadi mein 300 gaya, Harsh ne pay kiya mera aur uska 50-50",
+      text: "Uber gaadi mein 300 gaya, Sam ne pay kiya mera aur uska 50-50",
       currentUser: mockCurrentUser,
       contacts: [
-        { id: "user_harsh_999", name: "Harsh", email: "harsh@example.com" },
+        { id: "user_sam_999", name: "Sam", email: "sam@example.com" },
         ...mockContacts,
       ],
       groups: mockGroups,
@@ -177,13 +177,13 @@ async function main() {
 
     assert.strictEqual(result.type, "expense_proposal");
     assert.strictEqual(result.amount, 300);
-    assert.strictEqual(result.paidByUserId, "user_harsh_999", "Payer must be Harsh");
+    assert.strictEqual(result.paidByUserId, "user_sam_999", "Payer must be Sam");
     assert.strictEqual(result.category, "transportation");
-    const harshSplit = result.splits.find((s) => s.userId === "user_harsh_999");
+    const samSplit = result.splits.find((s) => s.userId === "user_sam_999");
     const mySplit = result.splits.find((s) => s.userId === "user_me_123");
-    assert.strictEqual(harshSplit.amount, 150);
+    assert.strictEqual(samSplit.amount, 150);
     assert.strictEqual(mySplit.amount, 150);
-    assert.strictEqual(harshSplit.paid, true);
+    assert.strictEqual(samSplit.paid, true);
     assert.strictEqual(mySplit.paid, false);
   });
 
