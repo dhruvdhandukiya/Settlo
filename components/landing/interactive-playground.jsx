@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, CheckCircle2, Receipt, Split, RefreshCw, Send, ArrowRight } from "lucide-react";
+import { CheckCircle2, Receipt, Split, RefreshCw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useCurrency } from "@/components/providers/currency-context";
 
 const SAMPLE_PROMPTS = [
@@ -14,9 +13,9 @@ const SAMPLE_PROMPTS = [
     description: "CCD Cafe Coffee",
     amount: 450,
     payer: "You",
-    category: "foodDrink",
+    category: "Food & Drink",
     splits: [
-      { name: "You", amount: 225, isPayer: true },
+      { name: "You", amount: 225, isPayer: true, status: "Payer" },
       { name: "Alex", amount: 225, isPayer: false, status: "Owes You" },
     ],
   },
@@ -27,9 +26,9 @@ const SAMPLE_PROMPTS = [
     description: "Goa Airbnb Villa Stay",
     amount: 12000,
     payer: "Alex",
-    category: "trips",
+    category: "Trips & Stays",
     splits: [
-      { name: "Alex", amount: 3000, isPayer: true },
+      { name: "Alex", amount: 3000, isPayer: true, status: "Paid Total" },
       { name: "Sam", amount: 3000, isPayer: false, status: "Owes Alex" },
       { name: "Jordan", amount: 3000, isPayer: false, status: "Owes Alex" },
       { name: "Taylor", amount: 3000, isPayer: false, status: "Owes Alex" },
@@ -42,9 +41,9 @@ const SAMPLE_PROMPTS = [
     description: "Pizza Party Delivery",
     amount: 60,
     payer: "You",
-    category: "foodDrink",
+    category: "Food & Drink",
     splits: [
-      { name: "You", amount: 25, isPayer: true },
+      { name: "You", amount: 25, isPayer: true, status: "Payer" },
       { name: "Jordan", amount: 35, isPayer: false, status: "Owes You" },
     ],
   },
@@ -55,7 +54,7 @@ const SAMPLE_PROMPTS = [
     description: "Airport Cab Ride",
     amount: 800,
     payer: "Sam",
-    category: "transportation",
+    category: "Transportation",
     splits: [
       { name: "Sam", amount: 0, isPayer: true, status: "Paid Total" },
       { name: "You", amount: 400, isPayer: false, status: "You Owe Sam" },
@@ -63,6 +62,131 @@ const SAMPLE_PROMPTS = [
     ],
   },
 ];
+
+function parseExpensePrompt(rawText) {
+  const text = (rawText || "").trim();
+  if (!text) return SAMPLE_PROMPTS[0];
+
+  const lower = text.toLowerCase();
+
+  // 1. Direct or fuzzy match with preset samples
+  for (const sample of SAMPLE_PROMPTS) {
+    if (
+      lower === sample.text.toLowerCase() ||
+      (sample.id === "ccd" && (lower.includes("ccd") || lower.includes("bhai ccd"))) ||
+      (sample.id === "goa" && (lower.includes("goa") || lower.includes("airbnb"))) ||
+      (sample.id === "pizza" && (lower.includes("pizza") || lower.includes("jordan owes"))) ||
+      (sample.id === "uber" && (lower.includes("uber") || (lower.includes("sam") && lower.includes("airport"))))
+    ) {
+      return {
+        id: sample.id,
+        label: sample.label,
+        text: text,
+        description: sample.description,
+        amount: sample.amount,
+        payer: sample.payer,
+        category: sample.category,
+        splits: sample.splits,
+      };
+    }
+  }
+
+  // 2. Intelligent Dynamic Natural Language Extraction for Custom Text
+  // Extract amount
+  const amtMatches = text.match(/(?:(?:rs\.?|inr|usd|\$|€|£|₹)\s*)?(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)/gi);
+  let totalAmount = 500;
+  if (amtMatches && amtMatches.length > 0) {
+    const cleanedNum = amtMatches[0].replace(/[^0-9.]/g, "");
+    const parsed = parseFloat(cleanedNum);
+    if (!isNaN(parsed) && parsed > 0) totalAmount = parsed;
+  }
+
+  // Extract Payer
+  let payer = "You";
+  const paidByMatch = text.match(/(?:paid by|pay kiya|paid)\s+([A-Za-z]+)/i);
+  if (paidByMatch && !/^(me|i|maine)$/i.test(paidByMatch[1])) {
+    payer = paidByMatch[1].charAt(0).toUpperCase() + paidByMatch[1].slice(1);
+  } else if (/([A-Za-z]+)\s+(?:ne pay kiya|paid)/i.test(text)) {
+    const nameMatch = text.match(/([A-Za-z]+)\s+(?:ne pay kiya|paid)/i);
+    if (nameMatch && !/^(me|i|maine|who)$/i.test(nameMatch[1])) {
+      payer = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1);
+    }
+  }
+
+  // Category & Description
+  let category = "General";
+  let description = text.slice(0, 32) || "Shared Expense";
+  if (/coffee|ccd|cafe|starbucks|tea|chai/i.test(lower)) {
+    category = "Food & Drink";
+    description = "Coffee & Cafe Meetup";
+  } else if (/dinner|lunch|food|pizza|burger|biryani|restaurant|zomato|swiggy/i.test(lower)) {
+    category = "Food & Drink";
+    description = "Dining & Food Split";
+  } else if (/uber|cab|ola|auto|flight|train|petrol|fuel|taxi/i.test(lower)) {
+    category = "Transportation";
+    description = "Cab & Travel Ride";
+  } else if (/goa|villa|airbnb|hotel|resort|trip|vacation|trek/i.test(lower)) {
+    category = "Trips & Stays";
+    description = "Trip & Accommodation";
+  } else if (/rent|wifi|electricity|groceries|milk|maid|cook/i.test(lower)) {
+    category = "Housing & Utilities";
+    description = "Household Shared Expense";
+  } else if (/movie|tickets|party|club|drinks|beer|gaming/i.test(lower)) {
+    category = "Entertainment";
+    description = "Outing & Entertainment";
+  }
+
+  // Extract Participants
+  let participants = [];
+  const nameExtraction = text.match(/(?:with|and|aur|between|for)\s+([A-Za-z,\s&]+)/i);
+  if (nameExtraction) {
+    const candidateNames = nameExtraction[1]
+      .split(/[,&]|\band\b|\baur\b/i)
+      .map((s) => s.trim())
+      .filter((s) => s && !/^(me|mera|i|us|friends|people|equal|50-50|everyone|all|each)$/i.test(s));
+
+    if (candidateNames.length > 0) {
+      participants = candidateNames.map((n) => n.charAt(0).toUpperCase() + n.slice(1));
+    }
+  }
+
+  if (!participants.includes(payer)) {
+    participants.unshift(payer);
+  }
+  if (payer !== "You" && !participants.includes("You")) {
+    participants.push("You");
+  } else if (participants.length === 1 && payer === "You") {
+    participants.push("Friend");
+  }
+
+  const perPerson = Math.round((totalAmount / participants.length) * 100) / 100;
+  const splits = participants.map((name) => {
+    const isPayer = name === payer;
+    return {
+      name,
+      amount: perPerson,
+      isPayer,
+      status: isPayer
+        ? "Paid Total"
+        : payer === "You"
+        ? "Owes You"
+        : name === "You"
+        ? `You Owe ${payer}`
+        : `Owes ${payer}`,
+    };
+  });
+
+  return {
+    id: "parsed",
+    label: "Custom Prompt",
+    text: text,
+    description,
+    amount: totalAmount,
+    payer,
+    category,
+    splits,
+  };
+}
 
 export function InteractivePlayground() {
   const [selectedPrompt, setSelectedPrompt] = useState(SAMPLE_PROMPTS[0]);
@@ -76,7 +200,7 @@ export function InteractivePlayground() {
     setIsParsing(true);
     setTimeout(() => {
       setIsParsing(false);
-    }, 300);
+    }, 200);
   };
 
   const handleCustomSubmit = (e) => {
@@ -84,48 +208,22 @@ export function InteractivePlayground() {
     if (!customText.trim()) return;
     setIsParsing(true);
     setTimeout(() => {
-      const amtMatch = customText.match(/(\d+[\d,.]*)/);
-      const parsedAmt = amtMatch ? parseFloat(amtMatch[1].replace(/,/g, "")) : 500;
-      setSelectedPrompt({
-        id: "custom",
-        label: "Custom Prompt",
-        text: customText,
-        description: customText.slice(0, 24) || "Expense",
-        amount: parsedAmt,
-        payer: "You",
-        category: "other",
-        splits: [
-          { name: "You", amount: parsedAmt / 2, isPayer: true },
-          { name: "Friend", amount: parsedAmt / 2, isPayer: false, status: "Owes You" },
-        ],
-      });
+      const parsedResult = parseExpensePrompt(customText);
+      setSelectedPrompt(parsedResult);
       setIsParsing(false);
-    }, 350);
+    }, 280);
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto rounded-3xl border border-border/60 bg-card/80 dark:bg-card/50 backdrop-blur-xl shadow-2xl p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs">
-              <Sparkles className="h-3 w-3 mr-1" />
-              Live Interactive AI Sandbox
-            </Badge>
-            <span className="text-xs text-muted-foreground">Test in real-time</span>
-          </div>
-          <h3 className="text-lg sm:text-xl font-bold mt-1 text-foreground">
-            Test natural language, Hinglish &amp; exact splits
-          </h3>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Gemini Flash 2.5 Active
-          </span>
-        </div>
+      {/* Header - Cleaned up without badges */}
+      <div className="border-b border-border/40 pb-3">
+        <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+          Test natural language, Hinglish &amp; exact splits
+        </h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+          Click any sample prompt or type your own expense to see real-time split parsing.
+        </p>
       </div>
 
       {/* Preset Prompt Chips */}
@@ -166,7 +264,7 @@ export function InteractivePlayground() {
           type="submit"
           size="sm"
           disabled={isParsing}
-          className="absolute right-1.5 top-1.5 bottom-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs gap-1.5 px-3"
+          className="absolute right-1.5 top-1.5 bottom-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs gap-1.5 px-3 cursor-pointer"
         >
           {isParsing ? (
             <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -183,7 +281,7 @@ export function InteractivePlayground() {
           <div className="absolute inset-0 bg-background/70 backdrop-blur-sm rounded-2xl flex items-center justify-center z-20 transition-all">
             <div className="flex items-center gap-2 text-sm font-medium text-emerald-600 dark:text-emerald-400">
               <RefreshCw className="h-4 w-4 animate-spin" />
-              <span>Gemini parser resolving splits &amp; payer...</span>
+              <span>Resolving splits &amp; payer...</span>
             </div>
           </div>
         )}
