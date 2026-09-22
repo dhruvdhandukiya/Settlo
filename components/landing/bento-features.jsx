@@ -8,15 +8,11 @@ export function BentoFeatures() {
   return (
     <section className="w-full max-w-6xl mx-auto py-16 px-4">
       <div className="text-center space-y-3 mb-12">
-        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
-          <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-          Technical Architecture &amp; Superpowers
-        </Badge>
         <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
           Built for precision, speed &amp; zero friction
         </h2>
         <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
-          Every layer of Settlo was engineered to eliminate manual spreadsheets, awkward bill calculations, and paywalls.
+          Every layer of Settlo was engineered to eliminate manual spreadsheets, awkward bill calculations and paywalls.
         </p>
       </div>
 
@@ -32,7 +28,7 @@ export function BentoFeatures() {
             Multimodal OCR, Voice Memos &amp; Hinglish Slang
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mb-6">
-            Powered by Google Gemini 2.5 Flash with structured JSON output schema enforcement. Understands messy paper receipts, regional dialects, and complex uneven splits.
+            Powered by Google Gemini with structured JSON output schema enforcement. Understands messy paper receipts, regional dialects, and complex uneven splits.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
@@ -101,15 +97,15 @@ export function BentoFeatures() {
               <span>Multi-Currency Engine</span>
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">
-              20+ Global Currencies
+              Global Currencies
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Instant 1-tap switching between ₹ INR, $ USD, € EUR, £ GBP, د.إ AED, C$ CAD, ¥ JPY with localized formatting and persistence.
+              Instant 1-tap switching between ₹ INR, $ USD, € EUR, £ GBP, AED, $ CAD, ¥ JPY with localized formatting and persistence.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-1.5 text-xs font-mono">
-            {["🇮🇳 ₹ INR", "🇺🇸 $ USD", "🇪🇺 € EUR", "🇬🇧 £ GBP", "🇦🇪 د.إ AED"].map((c, i) => (
+            {["🇮🇳 ₹ INR", "🇺🇸 $ USD", "🇪🇺 € EUR", "🇬🇧 £ GBP", "🇦🇪 AED"].map((c, i) => (
               <span key={i} className="px-2 py-1 rounded-lg bg-muted/60 border border-border/50 text-foreground">
                 {c}
               </span>
