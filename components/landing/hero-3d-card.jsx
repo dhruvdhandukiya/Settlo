@@ -16,13 +16,19 @@ export function Hero3DCard() {
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (!container || !canvas) return;
+    const getDims = () => {
+      const w = container.clientWidth || container.parentElement?.clientWidth || 540;
+      const h = container.clientHeight || 480;
+      return { width: Math.max(w, 320), height: Math.max(h, 380) };
+    };
+
+    const { width: initialWidth, height: initialHeight } = getDims();
 
     // 1. Scene & Camera
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       45,
-      container.clientWidth / container.clientHeight,
+      initialWidth / initialHeight,
       0.1,
       1000
     );
@@ -35,8 +41,8 @@ export function Hero3DCard() {
       antialias: true,
       powerPreference: "high-performance",
     });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(initialWidth, initialHeight);
+    renderer.setPixelRatio(Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 1, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
 
@@ -204,17 +210,23 @@ export function Hero3DCard() {
     container.addEventListener("pointermove", handlePointerMove);
     container.addEventListener("pointerleave", handlePointerLeave);
 
-    // 8. Resize Handler
+    // 8. Resize Handler & Observer
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
+      const { width, height } = getDims();
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
     };
 
     window.addEventListener("resize", handleResize);
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(container);
+
+    // Run once on next animation frame to guarantee container is sized
+    requestAnimationFrame(handleResize);
 
     // 9. Animation Loop (60 FPS)
     let animationFrameId;
@@ -270,6 +282,7 @@ export function Hero3DCard() {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
       container.removeEventListener("pointermove", handlePointerMove);
       container.removeEventListener("pointerleave", handlePointerLeave);
       window.removeEventListener("resize", handleResize);
@@ -291,7 +304,7 @@ export function Hero3DCard() {
       ref={containerRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full h-[420px] sm:h-[480px] lg:h-[520px] flex items-center justify-center select-none"
+      className="relative w-full min-h-[440px] h-[440px] sm:h-[480px] lg:h-[520px] flex items-center justify-center select-none"
     >
       {/* Three.js 3D Canvas */}
       <canvas
