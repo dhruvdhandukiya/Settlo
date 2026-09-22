@@ -234,6 +234,7 @@ export function ExpenseForm({ type = "individual", onSuccess }) {
         description: data.description,
         amount: amount,
         category: data.category || "Other",
+        currency: currency || currentUser?.currency || "INR",
         date: data.date.getTime(), // Convert to timestamp
         paidByUserId: data.paidByUserId,
         splitType: data.splitType,

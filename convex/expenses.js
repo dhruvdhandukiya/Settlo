@@ -8,6 +8,7 @@ export const createExpense = mutation({
     description: v.string(),
     amount: v.number(),
     category: v.optional(v.string()),
+    currency: v.optional(v.string()),
     date: v.number(), // timestamp
     paidByUserId: v.id("users"),
     splitType: v.string(), // "equal", "percentage", "exact"
@@ -72,6 +73,7 @@ export const createExpense = mutation({
       description: args.description,
       amount: args.amount,
       category: args.category || "Other",
+      currency: args.currency,
       date: args.date,
       paidByUserId: args.paidByUserId,
       splitType: args.splitType,

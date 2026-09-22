@@ -30,7 +30,7 @@ const settlementSchema = z.object({
 export default function SettlementForm({ entityType, entityData, onSuccess }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const createSettlement = useConvexMutation(api.settlements.createSettlement);
-  const { currencySymbol, formatAmount } = useCurrency();
+  const { currencySymbol, formatAmount, currency } = useCurrency();
 
   // Set up form with validation
   const {
@@ -43,7 +43,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     defaultValues: {
       amount: "",
       note: "",
-      paymentType: "youPaid",
+      paymentType: "youPaid", // Default to current user paying
     },
   });
 
@@ -69,6 +69,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
       await createSettlement.mutate({
         amount,
         note: data.note,
+        currency: currency || currentUser?.currency || "INR",
         paidByUserId,
         receivedByUserId,
         // No groupId for user settlements
@@ -111,6 +112,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
       await createSettlement.mutate({
         amount,
         note: data.note,
+        currency: currency || currentUser?.currency || "INR",
         paidByUserId,
         receivedByUserId,
         groupId: entityData.group.id,

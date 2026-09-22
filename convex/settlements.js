@@ -10,6 +10,7 @@ export const createSettlement = mutation({
   args: {
     amount: v.number(), // must be > 0
     note: v.optional(v.string()),
+    currency: v.optional(v.string()),
     paidByUserId: v.id("users"),
     receivedByUserId: v.id("users"),
     groupId: v.optional(v.id("groups")), // null when settling one‑to‑one
@@ -46,6 +47,7 @@ export const createSettlement = mutation({
     return await ctx.db.insert("settlements", {
       amount: args.amount,
       note: args.note,
+      currency: args.currency,
       date: Date.now(), // server‑side timestamp
       paidByUserId: args.paidByUserId,
       receivedByUserId: args.receivedByUserId,
