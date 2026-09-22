@@ -54,9 +54,6 @@ export function CurrencySelector({ className = "" }) {
               <Globe className="h-3.5 w-3.5 text-sky-500" />
               Select Currency
             </span>
-            <span className="text-[10px] text-muted-foreground font-normal">
-              Worldwide (20+)
-            </span>
           </div>
 
           <div className="relative">
