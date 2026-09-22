@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Bot, GitMerge, Globe2, Zap, CheckCircle2 } from "lucide-react";
+import { Sparkles, Camera, GitMerge, Globe2, Zap, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function BentoFeatures() {
@@ -51,23 +51,23 @@ export function BentoFeatures() {
           </div>
         </div>
 
-        {/* Card 2: Telegram Bot Companion */}
-        <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-card via-card/80 to-sky-500/5 p-6 sm:p-8 backdrop-blur-xl shadow-lg relative overflow-hidden group hover:border-sky-500/40 transition-all duration-300 flex flex-col justify-between">
+        {/* Card 2: Vision OCR Receipt Scanning */}
+        <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-card via-card/80 to-purple-500/5 p-6 sm:p-8 backdrop-blur-xl shadow-lg relative overflow-hidden group hover:border-purple-500/40 transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-3">
-              <Bot className="h-4 w-4" />
-              <span>Instant Messaging Bot</span>
+            <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-3">
+              <Camera className="h-4 w-4" />
+              <span>Vision OCR Scanner</span>
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">
-              Telegram 24/7 Companion
+              Itemized Receipt OCR
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Drop expenses on the go while walking out of the cafe. Features interactive inline callback buttons and cross-channel deduplication.
+              Snap paper bills or restaurant receipts. Settlo automatically detects line items, tax, tip, and calculates exact per-person splits.
             </p>
           </div>
 
-          <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs font-mono text-sky-900 dark:text-sky-300">
-            👉 /balance or text: "Uber 400 with Alex"
+          <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs font-mono text-purple-900 dark:text-purple-300">
+            🧾 1-click camera scan &amp; item breakdown
           </div>
         </div>
 

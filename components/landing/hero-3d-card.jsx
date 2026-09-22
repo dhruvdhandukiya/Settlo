@@ -328,22 +328,6 @@ export function Hero3DCard() {
         </div>
       </div>
 
-      {/* Pinned Glass Badge: Encrypted & Secure */}
-      <div className="absolute top-4 right-4 sm:right-8 z-20 pointer-events-none">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-lg text-xs text-slate-200">
-          <Shield className="h-3.5 w-3.5 text-emerald-400" />
-          <span className="font-medium text-[11px]">Encrypted &amp; Real-time</span>
-        </div>
-      </div>
-
-      {/* Pinned Glass Badge: Convex WebSocket */}
-      <div className="absolute bottom-8 left-4 sm:left-8 z-20 pointer-events-none">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-lg text-xs text-slate-200">
-          <Zap className="h-3.5 w-3.5 text-amber-400" />
-          <span className="font-medium text-[11px]">Convex Live • &lt;24ms sync</span>
-        </div>
-      </div>
-
       {/* Currency Switcher Buttons around 3D space */}
       <div className="absolute bottom-2 right-4 sm:right-8 z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-xl border border-white/10 text-[11px] font-mono">
         <span className="text-slate-400 px-1 text-[10px]">CURRENCY:</span>
@@ -360,13 +344,6 @@ export function Hero3DCard() {
             {code}
           </button>
         ))}
-      </div>
-
-      {/* Move Cursor Hint */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] uppercase font-mono tracking-widest text-slate-500 pointer-events-none flex items-center gap-2">
-        <span>MOVE YOUR CURSOR</span>
-        <span className="w-8 h-[1px] bg-slate-600" />
-        <span>TO EXPLORE 3D</span>
       </div>
     </div>
   );

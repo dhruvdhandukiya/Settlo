@@ -11,9 +11,9 @@ const COMPARISONS = [
     splitwise: "Locked behind $39.99/yr Pro Subscription",
   },
   {
-    feature: "Telegram Bot Integration",
-    settlo: "Native 1-tap bot with inline callback buttons",
-    splitwise: "Not available",
+    feature: "Daily Expense Limits & Paywalls",
+    settlo: "100% Free & Unlimited splits",
+    splitwise: "3 expense daily limit on free tier",
   },
   {
     feature: "Hinglish & Regional Dialect Parsing",
