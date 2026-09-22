@@ -19,6 +19,24 @@ export const createExpense = mutation({
       })
     ),
     groupId: v.optional(v.id("groups")),
+    receiptUrl: v.optional(v.string()),
+    itemizedBreakdown: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          name: v.string(),
+          price: v.number(),
+          quantity: v.optional(v.number()),
+          assignments: v.array(
+            v.object({
+              userId: v.id("users"),
+              weight: v.number(),
+              amount: v.number(),
+            })
+          ),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     // Use centralized getCurrentUser function
@@ -59,6 +77,8 @@ export const createExpense = mutation({
       splitType: args.splitType,
       splits: args.splits,
       groupId: args.groupId,
+      receiptUrl: args.receiptUrl,
+      itemizedBreakdown: args.itemizedBreakdown,
       createdBy: user._id,
     });
 

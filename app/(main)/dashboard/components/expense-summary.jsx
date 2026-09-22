@@ -81,12 +81,18 @@ export function ExpenseSummary({
   ];
 
   // Build 12 months array with real data
+  const monthlyList =
+    analytics?.monthlySpending || analytics?.monthlyBreakdown || [];
+
   const chartData = monthNames.map((name, index) => {
-    const found = (analytics?.monthlyBreakdown || []).find(
-      (m) => m.month === index + 1
+    const found = monthlyList.find(
+      (m) =>
+        m.monthIndex === index ||
+        m.month === index + 1 ||
+        m.monthName === name
     );
-    const amount = found ? found.amount : 0;
-    const count = found ? found.count : 0;
+    const amount = found ? (found.total ?? found.amount ?? 0) : 0;
+    const count = found ? (found.count ?? 0) : 0;
     const isCurrentMonth =
       targetYear === currentYear && index === currentMonthIdx;
 

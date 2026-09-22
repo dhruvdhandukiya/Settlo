@@ -342,12 +342,14 @@ export function QuickExpenseModal({ open, onOpenChange }) {
       await createExpense.mutate({
         description: proposal.description,
         amount: proposal.amount,
+        currency: proposal.currency || currentUser?.currency || "INR",
         category: proposal.category || "other",
         date: proposal.date || Date.now(),
         paidByUserId: proposal.paidByUserId || currentUser._id,
         splitType: proposal.splitType || "equal",
         splits: formattedSplits,
         groupId: proposal.groupId || undefined,
+        itemizedBreakdown: proposal.itemizedBreakdown || undefined,
       });
 
       toast.success("Expense saved successfully via AI Assistant!");
@@ -667,6 +669,7 @@ export function QuickExpenseModal({ open, onOpenChange }) {
         {stage === "receipt_matrix" && receiptAnalysis && (
           <ReceiptItemAssigner
             receiptData={receiptAnalysis}
+            filePreview={filePreview}
             initialParticipants={[
               {
                 id: currentUser?._id || currentUser?.id,
@@ -674,7 +677,6 @@ export function QuickExpenseModal({ open, onOpenChange }) {
                 email: currentUser?.email,
                 imageUrl: currentUser?.imageUrl,
               },
-              ...contacts,
             ]}
             allAvailableContacts={contacts}
             currentUserId={currentUser?._id || currentUser?.id}
@@ -711,7 +713,7 @@ export function QuickExpenseModal({ open, onOpenChange }) {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-green-600">
-                      {formatAmount(proposal.amount)}
+                      {formatAmount(proposal.amount, proposal.currency)}
                     </div>
                     <Badge variant="outline" className="text-[10px] capitalize">
                       {proposal.splitType} Split
@@ -763,7 +765,7 @@ export function QuickExpenseModal({ open, onOpenChange }) {
                             <span className="font-medium">{pInfo?.name}</span>
                           </div>
                           <div className="font-bold">
-                            {formatAmount(s.amount)}
+                            {formatAmount(s.amount, proposal.currency)}
                           </div>
                         </div>
                       );

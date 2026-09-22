@@ -48,6 +48,24 @@ export default defineSchema({
       })
     ),
     groupId: v.optional(v.id("groups")), // null for one-on-one expenses
+    receiptUrl: v.optional(v.string()),
+    itemizedBreakdown: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          name: v.string(),
+          price: v.number(),
+          quantity: v.optional(v.number()),
+          assignments: v.array(
+            v.object({
+              userId: v.id("users"),
+              weight: v.number(),
+              amount: v.number(),
+            })
+          ),
+        })
+      )
+    ),
     createdBy: v.id("users"), // Reference to users table
   })
     .index("by_group", ["groupId"])

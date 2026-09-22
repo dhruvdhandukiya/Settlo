@@ -14,28 +14,66 @@ export const getAllContacts = query({
       return { users: [], groups: [] };
     }
 
-    // Fetch all registered users (excluding current user)
-    const allUsers = await ctx.db.query("users").collect();
-    const contactUsers = allUsers
-      .filter((u) => u._id !== currentUser._id)
-      .map((u) => ({
-        id: u._id,
-        name: u.name || u.email?.split("@")[0] || "User",
-        email: u.email,
-        imageUrl: u.imageUrl,
-        type: "user",
-      }));
-
-    // Groups where current user is a member
-    const userGroups = (await ctx.db.query("groups").collect())
-      .filter((g) => g.members.some((m) => m.userId === currentUser._id))
+    // 1. Groups where current user is a member
+    const allGroups = await ctx.db.query("groups").collect();
+    const userGroups = allGroups
+      .filter((g) => g.members?.some((m) => m.userId === currentUser._id))
       .map((g) => ({
         id: g._id,
         name: g.name,
         description: g.description,
-        memberCount: g.members.length,
+        memberCount: g.members?.length || 0,
         type: "group",
       }));
+
+    // 2. Collect IDs of all related users (from shared groups + shared expenses)
+    const relatedUserIds = new Set();
+
+    // From groups
+    allGroups
+      .filter((g) => g.members?.some((m) => m.userId === currentUser._id))
+      .forEach((g) => {
+        g.members?.forEach((m) => {
+          if (m.userId !== currentUser._id) {
+            relatedUserIds.add(m.userId);
+          }
+        });
+      });
+
+    // From expenses
+    const allExpenses = await ctx.db.query("expenses").collect();
+    allExpenses.forEach((exp) => {
+      const isUserInvolved =
+        exp.paidByUserId === currentUser._id ||
+        (exp.splits || []).some((s) => s.userId === currentUser._id);
+
+      if (isUserInvolved) {
+        if (exp.paidByUserId && exp.paidByUserId !== currentUser._id) {
+          relatedUserIds.add(exp.paidByUserId);
+        }
+        (exp.splits || []).forEach((s) => {
+          if (s.userId && s.userId !== currentUser._id) {
+            relatedUserIds.add(s.userId);
+          }
+        });
+      }
+    });
+
+    // 3. Fetch only related users
+    const contactUserPromises = Array.from(relatedUserIds).map((id) =>
+      ctx.db.get(id)
+    );
+    const resolvedUsers = (await Promise.all(contactUserPromises)).filter(
+      Boolean
+    );
+
+    const contactUsers = resolvedUsers.map((u) => ({
+      id: u._id,
+      name: u.name || u.email?.split("@")[0] || "User",
+      email: u.email,
+      imageUrl: u.imageUrl,
+      type: "user",
+    }));
 
     /* sort alphabetically */
     contactUsers.sort((a, b) => (a?.name || "").localeCompare(b?.name || ""));

@@ -84,8 +84,12 @@ export function CurrencyProvider({ children }) {
   const currencyDetails = getCurrencyDetails(currency);
   const currencySymbol = currencyDetails.symbol;
 
-  const formatAmount = (amount, options = {}) => {
-    return formatCurrency(amount, currency, options);
+  const formatAmount = (amount, overrideCurrencyOrOptions = {}) => {
+    if (typeof overrideCurrencyOrOptions === "string") {
+      return formatCurrency(amount, overrideCurrencyOrOptions);
+    }
+    const targetCurrency = overrideCurrencyOrOptions?.currency || currency;
+    return formatCurrency(amount, targetCurrency, overrideCurrencyOrOptions);
   };
 
   return (
