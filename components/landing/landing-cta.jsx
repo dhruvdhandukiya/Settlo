@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Bot, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function LandingCta() {
@@ -22,7 +22,7 @@ export function LandingCta() {
         </h2>
 
         <p className="text-sm sm:text-base text-emerald-100/90 max-w-xl mx-auto leading-relaxed">
-          Launch Settlo right in your browser or connect with Telegram to start logging shared expenses in seconds.
+          Launch Settlo right in your browser to start logging and splitting shared expenses in seconds.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -34,18 +34,6 @@ export function LandingCta() {
             <Link href="/dashboard">
               <span>Open Settlo Dashboard</span>
               <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="w-full sm:w-auto border-white/30 bg-white/10 hover:bg-white/20 text-white font-semibold gap-2 text-sm rounded-2xl h-12 px-6 backdrop-blur-md"
-          >
-            <Link href="/dashboard?telegram=open">
-              <Bot className="h-4 w-4" />
-              <span>Connect on Telegram</span>
             </Link>
           </Button>
         </div>
@@ -61,7 +49,7 @@ export function LandingCta() {
           </span>
           <span className="flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
-            20+ Global Currencies
+            Global Currencies
           </span>
         </div>
       </div>

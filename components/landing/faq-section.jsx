@@ -19,7 +19,7 @@ const FAQS = [
   },
   {
     q: "How does Multi-Currency work for international trips?",
-    a: "Settlo supports 20+ world currencies including ₹ INR, $ USD, € EUR, £ GBP, د.إ AED, C$ CAD, ¥ JPY, and more. You can switch your preferred display currency anytime in 1 tap from the top navigation header.",
+    a: "Settlo supports worldwide currencies including ₹ INR, $ USD, € EUR, £ GBP, AED, $ CAD, ¥ JPY, and more. You can switch your preferred display currency anytime in 1 tap from the top navigation header.",
   },
   {
     q: "What makes the real-time sync faster than other apps?",

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Bot, Globe, Shield, Code2, Heart } from "lucide-react";
+import { Globe, Heart } from "lucide-react";
 import { useCurrency } from "@/components/providers/currency-context";
 import { SettloLogo } from "@/components/settlo-logo";
 
@@ -15,7 +15,7 @@ export function LandingFooter() {
         <div className="space-y-3 md:col-span-2">
           <SettloLogo size="default" />
           <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
-            The multimodal AI expense engine for trips, roommates, and groups. Log in natural language, voice notes, or instant receipt scans.
+            The multimodal AI expense engine for trips, roommates, and groups.
           </p>
           <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground">
             <Globe className="h-3.5 w-3.5 text-emerald-500" />
@@ -50,23 +50,22 @@ export function LandingFooter() {
         </div>
 
         <div className="space-y-2">
-          <div className="font-bold text-foreground text-xs uppercase tracking-wider">Architecture</div>
+          <div className="font-bold text-foreground text-xs uppercase tracking-wider">Quick Links</div>
           <ul className="space-y-1.5 text-xs">
-            <li className="flex items-center gap-1">
-              <Code2 className="h-3 w-3 text-emerald-500" />
-              <span>Next.js 15 &amp; Convex</span>
+            <li>
+              <Link href="/dashboard" className="hover:text-foreground transition">
+                Dashboard
+              </Link>
             </li>
-            <li className="flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-emerald-500" />
-              <span>Gemini Flash 2.5</span>
+            <li>
+              <Link href="/expenses/new" className="hover:text-foreground transition">
+                Add Expense
+              </Link>
             </li>
-            <li className="flex items-center gap-1">
-              <Bot className="h-3 w-3 text-sky-500" />
-              <span>Telegram Bot API</span>
-            </li>
-            <li className="flex items-center gap-1">
-              <Shield className="h-3 w-3 text-emerald-500" />
-              <span>Clerk Auth Security</span>
+            <li>
+              <Link href="/contacts" className="hover:text-foreground transition">
+                Friends &amp; Groups
+              </Link>
             </li>
           </ul>
         </div>
