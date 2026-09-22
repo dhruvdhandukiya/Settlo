@@ -63,7 +63,7 @@ const SAMPLE_PROMPTS = [
   },
 ];
 
-function parseExpensePrompt(rawText) {
+function parseExpensePromptClient(rawText) {
   const text = (rawText || "").trim();
   if (!text) return SAMPLE_PROMPTS[0];
 
@@ -91,38 +91,47 @@ function parseExpensePrompt(rawText) {
     }
   }
 
-  // 2. Intelligent Dynamic Natural Language Extraction for Custom Text
+  // 2. Intelligent Natural Language Fallback
   // Extract amount
-  const amtMatches = text.match(/(?:(?:rs\.?|inr|usd|\$|€|£|₹)\s*)?(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)/gi);
+  const amtMatches = text.match(/(?:(?:total|amount|bill|rs\.?|inr|usd|\$|€|£|₹|paid)\s*[:=]?\s*)?(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)/gi);
   let totalAmount = 500;
   if (amtMatches && amtMatches.length > 0) {
-    const cleanedNum = amtMatches[0].replace(/[^0-9.]/g, "");
-    const parsed = parseFloat(cleanedNum);
-    if (!isNaN(parsed) && parsed > 0) totalAmount = parsed;
+    // Pick the last or largest numeric token
+    const nums = amtMatches
+      .map((m) => {
+        const cleaned = m.replace(/[^0-9.]/g, "");
+        return parseFloat(cleaned);
+      })
+      .filter((n) => !isNaN(n) && n > 0);
+    if (nums.length > 0) {
+      totalAmount = nums[nums.length - 1];
+    }
   }
 
   // Extract Payer
   let payer = "You";
-  const paidByMatch = text.match(/(?:paid by|pay kiya|paid)\s+([A-Za-z]+)/i);
-  if (paidByMatch && !/^(me|i|maine)$/i.test(paidByMatch[1])) {
-    payer = paidByMatch[1].charAt(0).toUpperCase() + paidByMatch[1].slice(1);
-  } else if (/([A-Za-z]+)\s+(?:ne pay kiya|paid)/i.test(text)) {
-    const nameMatch = text.match(/([A-Za-z]+)\s+(?:ne pay kiya|paid)/i);
-    if (nameMatch && !/^(me|i|maine|who)$/i.test(nameMatch[1])) {
-      payer = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1);
-    }
+  const payerAfter = text.match(/(?:paid by|pay kiya|paid)\s+([A-Za-z]+)/i);
+  const payerBefore = text.match(/([A-Za-z]+)\s+(?:ne pay kiya|paid|ne diya)/i);
+
+  if (payerBefore && !/^(me|i|maine|who|we|total|amount)$/i.test(payerBefore[1])) {
+    payer = payerBefore[1].charAt(0).toUpperCase() + payerBefore[1].slice(1);
+  } else if (payerAfter && !/^(me|i|maine|who|we|total|amount)$/i.test(payerAfter[1])) {
+    payer = payerAfter[1].charAt(0).toUpperCase() + payerAfter[1].slice(1);
   }
 
   // Category & Description
   let category = "General";
-  let description = text.slice(0, 32) || "Shared Expense";
-  if (/coffee|ccd|cafe|starbucks|tea|chai/i.test(lower)) {
+  let description = "Shared Expense";
+  if (/flight|plane|airline|indigo|air india/i.test(lower)) {
+    category = "Transportation";
+    description = "Flight Ticket Booking";
+  } else if (/coffee|ccd|cafe|starbucks|tea|chai/i.test(lower)) {
     category = "Food & Drink";
     description = "Coffee & Cafe Meetup";
   } else if (/dinner|lunch|food|pizza|burger|biryani|restaurant|zomato|swiggy/i.test(lower)) {
     category = "Food & Drink";
     description = "Dining & Food Split";
-  } else if (/uber|cab|ola|auto|flight|train|petrol|fuel|taxi/i.test(lower)) {
+  } else if (/uber|cab|ola|auto|petrol|fuel|taxi/i.test(lower)) {
     category = "Transportation";
     description = "Cab & Travel Ride";
   } else if (/goa|villa|airbnb|hotel|resort|trip|vacation|trek/i.test(lower)) {
@@ -136,32 +145,45 @@ function parseExpensePrompt(rawText) {
     description = "Outing & Entertainment";
   }
 
+  // Stop words to never treat as participant names
+  const STOP_WORDS = new Set([
+    "total", "amount", "paid", "kiya", "split", "between", "with", "and", "aur",
+    "for", "book", "ticket", "flight", "cab", "hotel", "villa", "dinner", "food",
+    "pizza", "uber", "chai", "bill", "rupees", "rs", "inr", "bucks", "equal",
+    "each", "50-50", "people", "friends", "everyone", "us", "all", "mera", "meri",
+    "mere", "aap", "tum", "ne", "pe", "ka", "ki", "ke", "gaya", "aaya", "hai",
+  ]);
+
   // Extract Participants
   let participants = [];
-  const nameExtraction = text.match(/(?:with|and|aur|between|for)\s+([A-Za-z,\s&]+)/i);
-  if (nameExtraction) {
-    const candidateNames = nameExtraction[1]
-      .split(/[,&]|\band\b|\baur\b/i)
-      .map((s) => s.trim())
-      .filter((s) => s && !/^(me|mera|i|us|friends|people|equal|50-50|everyone|all|each)$/i.test(s));
+  const betweenMatch = text.match(/(?:between|with|among|and|aur)\s+([^,.;]+)/i);
+  if (betweenMatch) {
+    const rawCandidates = betweenMatch[1]
+      .split(/[,&]|\band\b|\baur\b|\bwith\b/i)
+      .map((s) => s.trim().replace(/[^A-Za-z]/g, ""))
+      .filter((s) => s.length > 1 && !STOP_WORDS.has(s.toLowerCase()));
 
-    if (candidateNames.length > 0) {
-      participants = candidateNames.map((n) => n.charAt(0).toUpperCase() + n.slice(1));
-    }
+    rawCandidates.forEach((cand) => {
+      const formatted = cand.charAt(0).toUpperCase() + cand.slice(1).toLowerCase();
+      if (!participants.includes(formatted)) {
+        participants.push(formatted);
+      }
+    });
   }
 
-  if (!participants.includes(payer)) {
+  // Ensure payer is included
+  if (payer && !participants.includes(payer)) {
     participants.unshift(payer);
   }
-  if (payer !== "You" && !participants.includes("You")) {
-    participants.push("You");
-  } else if (participants.length === 1 && payer === "You") {
+
+  // If only 1 person found and payer is You, add Friend
+  if (participants.length === 1 && payer === "You") {
     participants.push("Friend");
   }
 
   const perPerson = Math.round((totalAmount / participants.length) * 100) / 100;
   const splits = participants.map((name) => {
-    const isPayer = name === payer;
+    const isPayer = name.toLowerCase() === payer.toLowerCase();
     return {
       name,
       amount: perPerson,
@@ -203,28 +225,49 @@ export function InteractivePlayground() {
     }, 200);
   };
 
-  const handleCustomSubmit = (e) => {
+  const handleCustomSubmit = async (e) => {
     e.preventDefault();
     if (!customText.trim()) return;
     setIsParsing(true);
-    setTimeout(() => {
-      const parsedResult = parseExpensePrompt(customText);
-      setSelectedPrompt(parsedResult);
-      setIsParsing(false);
-    }, 280);
+
+    try {
+      // 1. Call public Gemini AI endpoint
+      const response = await fetch("/api/ai/parse-public", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: customText }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data && Array.isArray(result.data.splits)) {
+          setSelectedPrompt({
+            id: "ai-parsed",
+            label: "AI Parsed",
+            text: customText,
+            description: result.data.description || "Shared Expense",
+            amount: result.data.amount,
+            payer: result.data.payer || "You",
+            category: result.data.category || "General",
+            splits: result.data.splits,
+          });
+          setIsParsing(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Public AI parse failed, using client parser:", err);
+    }
+
+    // 2. Fallback to client parser
+    const fallbackResult = parseExpensePromptClient(customText);
+    setSelectedPrompt(fallbackResult);
+    setIsParsing(false);
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto rounded-3xl border border-border/60 bg-card/80 dark:bg-card/50 backdrop-blur-xl shadow-2xl p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header - Cleaned up without badges */}
-      <div className="border-b border-border/40 pb-3">
-        <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-          Test natural language, Hinglish &amp; exact splits
-        </h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-          Click any sample prompt or type your own expense to see real-time split parsing.
-        </p>
-      </div>
 
       {/* Preset Prompt Chips */}
       <div className="space-y-2">
