@@ -39,7 +39,6 @@ const Hero3DCard = dynamic(
 import { InteractivePlayground } from "@/components/landing/interactive-playground";
 import { BentoFeatures } from "@/components/landing/bento-features";
 import { DebtGraphVisualizer } from "@/components/landing/debt-graph-visualizer";
-import { TechStackSection } from "@/components/landing/tech-stack-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { LandingCta } from "@/components/landing/landing-cta";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -113,9 +112,6 @@ export default function LandingPage() {
 
       {/* ───── Debt Graph Algorithm Visualizer ───── */}
       <DebtGraphVisualizer />
-
-      {/* ───── Tech Stack & Architecture Transparency ───── */}
-      <TechStackSection />
 
       {/* ───── Frequently Asked Questions ───── */}
       <FaqSection />
