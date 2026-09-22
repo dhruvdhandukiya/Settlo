@@ -84,4 +84,13 @@ export default defineSchema({
       })
     ),
   }),
+
+  // Customer Feedback & Inquiries
+  feedback: defineTable({
+    name: v.string(),
+    contact: v.string(),
+    message: v.string(),
+    createdAt: v.number(),
+    status: v.optional(v.string()), // "new" | "read" | "resolved"
+  }).index("by_created_at", ["createdAt"]),
 });
