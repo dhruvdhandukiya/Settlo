@@ -175,13 +175,3 @@ npx convex deploy
 curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=https://<YOUR_VERCEL_DOMAIN>/api/telegram/webhook"
 ```
 
----
-
-## 📄 License
-This project is licensed under the MIT License — feel free to use, customize, and build upon it!
-
----
-
-<div align="center">
-Made with ❤️ for frictionless group expense splitting.
-</div>
