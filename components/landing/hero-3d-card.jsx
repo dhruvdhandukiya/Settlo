@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Sparkles, Shield, Zap, Wifi } from "lucide-react";
 import { useCurrency } from "@/components/providers/currency-context";
+import { SettloLogo } from "@/components/settlo-logo";
 
 export function Hero3DCard() {
   const containerRef = useRef(null);
@@ -324,7 +325,10 @@ export function Hero3DCard() {
 
         <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
           <span>•••• 4829</span>
-          <span className="text-emerald-400 font-bold">SETTLO</span>
+          <div className="flex items-center gap-1 font-sans">
+            <span className="font-bold text-white text-xs tracking-tight">Settlo</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          </div>
         </div>
       </div>
 
