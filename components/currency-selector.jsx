@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check, ChevronDown, Globe, Search } from "lucide-react";
+import { CountryFlag } from "@/components/country-flag";
 
 export function CurrencySelector({ className = "" }) {
   const { currency, currencyDetails, setCurrency, allCurrencies } = useCurrency();
@@ -31,10 +32,10 @@ export function CurrencySelector({ className = "" }) {
         <Button
           variant="outline"
           size="sm"
-          className={`h-9 px-2.5 rounded-xl border-border/80 bg-background/80 backdrop-blur-sm hover:bg-muted/60 text-xs font-semibold gap-1.5 shadow-sm transition-all ${className}`}
+          className={`h-9 px-2.5 rounded-xl border-border/80 bg-background/80 backdrop-blur-sm hover:bg-muted/60 text-xs font-semibold gap-2 shadow-sm transition-all ${className}`}
           title="Change Currency"
         >
-          <span className="text-base leading-none">{currencyDetails.flag}</span>
+          <CountryFlag code={currencyDetails.code} fallbackEmoji={currencyDetails.flag} className="w-4 h-3 rounded-[2px]" />
           <span className="font-bold text-foreground">{currencyDetails.symbol}</span>
           <span className="text-muted-foreground text-[11px] font-mono hidden sm:inline">
             {currencyDetails.code}
@@ -84,16 +85,14 @@ export function CurrencySelector({ className = "" }) {
                       setOpen(false);
                       setSearch("");
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left ${
+                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-colors text-left cursor-pointer ${
                       isSelected
                         ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 font-semibold"
                         : "hover:bg-muted/60 text-foreground"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="text-lg leading-none shrink-0">
-                        {c.flag}
-                      </span>
+                      <CountryFlag code={c.code} fallbackEmoji={c.flag} className="w-4 h-3 rounded-[2px]" />
                       <div className="truncate">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-xs">{c.code}</span>

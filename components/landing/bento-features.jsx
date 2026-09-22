@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Sparkles, Camera, GitMerge, Globe2, Zap, CheckCircle2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CountryFlag } from "@/components/country-flag";
 
 export function BentoFeatures() {
   return (
@@ -105,9 +105,16 @@ export function BentoFeatures() {
           </div>
 
           <div className="flex flex-wrap gap-1.5 text-xs font-mono">
-            {["🇮🇳 ₹ INR", "🇺🇸 $ USD", "🇪🇺 € EUR", "🇬🇧 £ GBP", "🇦🇪 AED"].map((c, i) => (
-              <span key={i} className="px-2 py-1 rounded-lg bg-muted/60 border border-border/50 text-foreground">
-                {c}
+            {[
+              { code: "INR", label: "₹ INR" },
+              { code: "USD", label: "$ USD" },
+              { code: "EUR", label: "€ EUR" },
+              { code: "GBP", label: "£ GBP" },
+              { code: "AED", label: "AED" },
+            ].map((c, i) => (
+              <span key={i} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/60 border border-border/50 text-foreground">
+                <CountryFlag code={c.code} className="w-3.5 h-2.5 rounded-[2px]" />
+                <span>{c.label}</span>
               </span>
             ))}
           </div>
