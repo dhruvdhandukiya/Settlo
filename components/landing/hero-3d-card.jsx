@@ -16,6 +16,8 @@ export function Hero3DCard() {
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
+    if (!container || !canvas) return;
+
     const getDims = () => {
       const w = container.clientWidth || container.parentElement?.clientWidth || 540;
       const h = container.clientHeight || 480;
@@ -44,21 +46,21 @@ export function Hero3DCard() {
     renderer.setSize(initialWidth, initialHeight);
     renderer.setPixelRatio(Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 1, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.35;
 
     // 3. Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
-    const emeraldLight = new THREE.PointLight(0x10b981, 4.5, 20);
+    const emeraldLight = new THREE.PointLight(0x10b981, 5.5, 25);
     emeraldLight.position.set(4, 3, 4);
     scene.add(emeraldLight);
 
-    const cyanLight = new THREE.PointLight(0x06b6d4, 3.5, 20);
+    const cyanLight = new THREE.PointLight(0x06b6d4, 4.0, 25);
     cyanLight.position.set(-4, -3, 3);
     scene.add(cyanLight);
 
-    const topLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    const topLight = new THREE.DirectionalLight(0xffffff, 1.8);
     topLight.position.set(0, 8, 6);
     scene.add(topLight);
 
@@ -69,16 +71,14 @@ export function Hero3DCard() {
     // Card Body
     const cardWidth = 4.4;
     const cardHeight = 2.75;
-    const cardDepth = 0.12;
+    const cardDepth = 0.14;
     const cardGeo = new THREE.BoxGeometry(cardWidth, cardHeight, cardDepth, 4, 4, 4);
 
-    // Frosted obsidian glass material with emerald gradient sheen
+    // Solid obsidian metallic glass material with emerald gradient sheen
     const cardMat = new THREE.MeshPhysicalMaterial({
-      color: 0x071118,
-      metalness: 0.45,
-      roughness: 0.18,
-      transmission: 0.55,
-      thickness: 0.6,
+      color: 0x090f19,
+      metalness: 0.82,
+      roughness: 0.2,
       clearcoat: 1.0,
       clearcoatRoughness: 0.08,
       reflectivity: 0.95,
@@ -88,28 +88,28 @@ export function Hero3DCard() {
 
     // Metallic Emerald Card Border Glow Trim
     const edgeGeo = new THREE.BoxGeometry(
-      cardWidth + 0.03,
-      cardHeight + 0.03,
+      cardWidth + 0.04,
+      cardHeight + 0.04,
       cardDepth + 0.02
     );
     const edgeMat = new THREE.MeshBasicMaterial({
       color: 0x10b981,
       wireframe: true,
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.65,
     });
     const edgeMesh = new THREE.Mesh(edgeGeo, edgeMat);
     cardGroup.add(edgeMesh);
 
     // 3D EMV Smart Chip
-    const chipGeo = new THREE.BoxGeometry(0.65, 0.48, 0.04);
+    const chipGeo = new THREE.BoxGeometry(0.65, 0.48, 0.05);
     const chipMat = new THREE.MeshStandardMaterial({
       color: 0xf59e0b,
-      metalness: 0.9,
-      roughness: 0.25,
+      metalness: 0.95,
+      roughness: 0.2,
     });
     const chipMesh = new THREE.Mesh(chipGeo, chipMat);
-    chipMesh.position.set(-1.45, 0.55, 0.08);
+    chipMesh.position.set(-1.45, 0.55, 0.09);
     cardGroup.add(chipMesh);
 
     // 5. Orbiting 3D Metallic Currency Tokens
