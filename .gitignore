@@ -24,6 +24,8 @@
 .DS_Store
 *.pem
 /scratch/
+Bill.png
+ItemizedReceipt.jpg
 
 # debug
 npm-debug.log*
