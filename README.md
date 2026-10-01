@@ -94,8 +94,12 @@ flowchart TD
 
     A -->|User Actions| D
     D -->|JWT Auth Context| A
+    A -.->|Renders WebGL Hero| B
     A -->|Server Actions / API Calls| E
     A -->|Public Trial| F
+    A -->|Submit Inquiries| H
+    H -->|Store Feedback| R
+    A -->|Format Amounts| L
     C -->|Webhook Updates| G
     G -->|Process Message / Voice / Photo| K
     K -->|AI Parsing| I
@@ -449,6 +453,3 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-<div align="center">
-  <b>Built with ❤️ by <a href="https://github.com/dhruvdhandukiya">Dhruv Dhandukiya</a></b>
-</div>
