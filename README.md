@@ -382,22 +382,22 @@ cp .env.example .env.local
 Fill in your configuration:
 ```env
 # Convex Backend Configuration
-CONVEX_DEPLOYMENT=dev:your-deployment-name
+CONVEX_DEPLOYMENT=dev:your-convex-deployment-name
 NEXT_PUBLIC_CONVEX_URL=https://your-deployment-name.convex.cloud
 NEXT_PUBLIC_CONVEX_SITE_URL=https://your-deployment-name.convex.site
 
 # Clerk Authentication (https://clerk.com)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-CLERK_JWT_ISSUER_DOMAIN=https://your-domain.clerk.accounts.dev
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key
+CLERK_SECRET_KEY=sk_test_your_clerk_secret_key
+CLERK_JWT_ISSUER_DOMAIN=https://your-clerk-domain.clerk.accounts.dev
 
 # Google Gemini AI (https://aistudio.google.com)
-GEMINI_API_KEY=AIzaSy...
+GEMINI_API_KEY=your_gemini_api_key_here
 
 # Telegram Bot Integration (Optional: @BotFather)
-TELEGRAM_BOT_TOKEN=123456789:ABCdef...
-TELEGRAM_BOT_USERNAME=my_settlo_bot
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=my_settlo_bot
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+TELEGRAM_BOT_USERNAME=your_bot_username
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=your_bot_username
 ```
 
 ### 4. Start Local Backend & Frontend
@@ -453,3 +453,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
+<div align="center">
+  <b>Built with ❤️ by <a href="https://github.com/dhruvdhandukiya">Dhruv Dhandukiya</a></b>
+</div>
