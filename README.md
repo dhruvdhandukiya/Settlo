@@ -450,9 +450,3 @@ npm run telegram:webhook https://your-production-domain.vercel.app
 ## 📄 License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-  <b>Built with ❤️ by <a href="https://github.com/dhruvdhandukiya">Dhruv Dhandukiya</a></b>
-</div>
